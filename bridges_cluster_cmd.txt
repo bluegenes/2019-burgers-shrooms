@@ -1,0 +1,6 @@
+
+
+## right now - this needs to go on the command line with snakemake
+
+"--cluster "sbatch -A {cluster.account} -t {cluster.time} -c {threads}"
+
