@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 """
-Auto generate mmetsp elvers files from csv
+generate mmetsp elvers file(s) from csv
 """
 import os
 import sys
@@ -11,13 +11,14 @@ import pandas as pd
 
 def build_fq2(row):
     base_link = "ftp://ftp.sra.ebi.ac.uk/vol1/fastq/"
-    SRR = row['SRR']
+    #SRR = row['SRR']
+    SRR = row['Run.x']
     if row['LibraryLayout'] == "PAIRED":
         fq2 = base_link + SRR[0:6] + '/00' + SRR[-1] + '/' + SRR  + '/' + SRR + '_2.fastq.gz'
     return fq2
 
 
-def build_elvers_samples(samples_file, out_csv, subset_list=None):
+def build_elvers_samples(samples_file, out_csv, subset_list=None, exclude_list=None):
     if '.tsv' in samples_file or '.csv' in samples_file:
         separator = '\t'
         if '.csv' in samples_file:
@@ -35,26 +36,28 @@ def build_elvers_samples(samples_file, out_csv, subset_list=None):
             print(e)
 
     base_link = "ftp://ftp.sra.ebi.ac.uk/vol1/fastq/"
-    if "SRR" in samples.columns and "LibraryLayout" in samples.columns:
-        samples['fq1'] = samples['SRR'].apply(lambda x : base_link + x[0:6] + '/00' + x[-1] + '/' + x + '/' + x + '_1.fastq.gz')
+    #if "SRR" in samples.columns and "LibraryLayout" in samples.columns:
+    if "Run.x" in samples.columns and "LibraryLayout" in samples.columns:
+        #samples['fq1'] = samples['SRR'].apply(lambda x : base_link + x[0:6] + '/00' + x[-1] + '/' + x + '/' + x + '_1.fastq.gz')
+        samples['fq1'] = samples['Run.x'].apply(lambda x : base_link + x[0:6] + '/00' + x[-1] + '/' + x + '/' + x + '_1.fastq.gz')
         samples['fq2'] = samples.apply(lambda row : build_fq2(row), axis=1)
+        samples['reference'] = samples['SampleName'].apply(lambda x :  'MMETSP_assemblies_figshare/' + x + '.trinity_out_2.2.0.Trinity.fasta.renamed.fasta')
 
-    elvers_samples = samples.loc[:, ['SampleName','SRR','fq1','fq2']]
-    elvers_samples.rename(columns={"SampleName": "sample", "SRR": "unit"}, inplace=True)
+    elvers_samples = samples.loc[:, ['SampleName','Run.x','fq1','fq2', 'reference']]
+    elvers_samples.rename(columns={"SampleName": "sample", "Run.x": "unit"}, inplace=True)
+
+    subset, exclude = [],[]
+    if subset_list:
+        with open(subset_list) as subsetFile:
+            subset = [line.strip() for line in subsetFile]
+            elvers_samples = elvers_samples[elvers_samples['sample'].isin(subset)]
+    if exclude_list:
+        with open(exclude_list) as excludeFile:
+            exclude = [line.strip() for line in excludeFile]
+            elvers_samples = elvers_samples[~elvers_samples['sample'].isin(exclude)]
 
     # for now, just keep this as a large csv file. We can do all preprocessing using a single file.
     elvers_samples.to_csv(out_csv,  sep=',', index=False)
-
-
-#def per_sample_elvers():
-# write a per-sample csv and yaml file!
-
-
-#def subset_samples_file(samples_df, subset_names)
-    #if subset_list:
-    #    sub_samples = subset_samples_file(samples, subset_list)
-    #    sub_samples.to_csv(out_csv, sep=', ')
-    #else:
 
 
 
@@ -64,5 +67,6 @@ if __name__ == '__main__':
     p.add_argument('samples_file')
     p.add_argument('-o', '--out_csv')
     p.add_argument('--subset_list')
+    p.add_argument('--exclude_list')
     args = p.parse_args()
-    sys.exit(build_elvers_samples(args.samples_file, args.out_csv, args.subset_list))
+    sys.exit(build_elvers_samples(args.samples_file, args.out_csv, args.subset_list, args.exclude_list))
