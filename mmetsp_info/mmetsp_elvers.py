@@ -41,7 +41,7 @@ def build_elvers_samples(samples_file, out_csv, subset_list=None, exclude_list=N
         #samples['fq1'] = samples['SRR'].apply(lambda x : base_link + x[0:6] + '/00' + x[-1] + '/' + x + '/' + x + '_1.fastq.gz')
         samples['fq1'] = samples['Run.x'].apply(lambda x : base_link + x[0:6] + '/00' + x[-1] + '/' + x + '/' + x + '_1.fastq.gz')
         samples['fq2'] = samples.apply(lambda row : build_fq2(row), axis=1)
-        samples['reference'] = samples['SampleName'].apply(lambda x :  'MMETSP_assemblies_figshare/' + x + '.trinity_out_2.2.0.Trinity.fasta.renamed.fasta')
+        samples['reference'] = samples['SampleName'].apply(lambda x :  'MMETSP_assemblies_zenodo/' + x + '.trinity_out_2.2.0.Trinity.fasta.renamed.fasta')
 
     elvers_samples = samples.loc[:, ['SampleName','Run.x','fq1','fq2', 'reference']]
     elvers_samples.rename(columns={"SampleName": "sample", "Run.x": "unit"}, inplace=True)
