@@ -1,0 +1,14 @@
+
+
+
+#python build_ortholog_counttable.py /pylon5/mc5phkp/ntpierce/haptophyta_orthofinder_results/Results_june_2019/Orthogroups/Orthogroups.tsv --quant_directory /pylon5/mc5phkp/ntpierce/haptophyta_out/quant --namemap_directory /pylon5/mc5phkp/ntpierce/namemaps
+
+## testing
+python build_ortholog_counttable.py Orthogroups.tsv --quant_directory quant --namemap_directory namemaps --sample_list haptophyta.txt --orthogroup_counttable haptophyta_orthogroup_counts.tsv
+
+# --sample_list None
+
+#quant files are haptophyta_out/quant/MMETSP0006_SRR1296917_x_haptophyta_MMETSP0006.salmon/quant.sf 
+#namemaps are namemaps/MMETSP0503.trinity_out_2.2.0.Trinity.fasta.dammit.namemap.csv
+# orthogroups file is haptophyta_orthofinder_results/Results_june_2019/Orthogroups/Orthogroups.tsv
+# in header, <samplename>.trinity_out_2.2.0.Trinity.fasta.transdecoder.pep --> remove trailing info, not needed
