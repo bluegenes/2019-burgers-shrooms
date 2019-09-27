@@ -42,16 +42,7 @@ def build_gtmap(orthogroups_file, gtmap_dir, samplelist=None, namemap_dir=None):
                      tx = tx.split("|")[0] # remove orf identifiers
                      sample_og_dict[tx] = og # dictionary of transcript: orthogroup
 
-        ### OPTIONAL - keep track of all the sample_og_dicts
-        #orthogroup_dicts[sample] = sample_og_dict # dict of dicts to save the temp d. But we can probably just iterate through this sample rn...
-        # grab the dataframe for this sample, expand multiple transcripts
-        #orthogroups[sample] = orthogroups[sample].str.split(' ')
-        #orthogroups[sample] = orthogroups[sample].str.split('|').str[0] # this is for a single transcript. Instead, there are many. Need to do differently
-        #sample_og_dict = dict(zip(orthogroups[sample], orthogroups['Orthogroup']))
-
-    # need to build trinity name: orthogroup dictionary for each sample
-
-        # for tximport, we want gene /t trans aka orthogroup /t trinity_name
+    # if we started with dammit names, need to build trinity name: orthogroup dictionary for each sample
         if namemap_dir:
             namemap = glob.glob(os.path.join(namemap_dir, sample + '*.csv'))
             dammit2trin = pd.read_csv(namemap[0], sep=',', header=0, dtype=str)
@@ -64,12 +55,11 @@ def build_gtmap(orthogroups_file, gtmap_dir, samplelist=None, namemap_dir=None):
                 for dam, trin in dam2trinD.items():
                     og = sample_og_dict.get(dam, None)
                     if og:
-           #        trinOG[trin] = og
+                        # for tximport, we want gene /t trans aka orthogroup /t trinity_name
                         og_map.write(f"{og}\t{trin}\n")
             print('done!')
         else:
             # if no namemaps, assume we had trinity names to start!
-            #trinOG = sample_og_dict
             orthogroup_gene_trans_map_file = os.path.join(gtmap_dir, sample + "_orthogroup_gtmap.tsv")
             with open(orthogroup_gene_trans_map_file, 'w') as og_map:
                 for trin, og in sample_og_dict.items():
