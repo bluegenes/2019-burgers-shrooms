@@ -1,6 +1,6 @@
 """
 Author: N Tessa Pierce, UC Davis Lab for Data Intensive Biology
-Run: snakemake -s biobombe.snakefile --use-conda
+Run: snakemake -s  biobombe_initial_ksweep.snakefile --use-conda -n
 """
 
 import os
@@ -50,7 +50,7 @@ rule run_adage:
         sparsity = adage_paramsD['sweep_values']['sparsity'],
         noise = adage_paramsD['sweep_values']['noise'],
         num_components = adage_paramsD['sweep_values']['num_components']
-    conda: 'environment.yaml'
+    conda: 'environment.yml'
     shell:
        """
        python adage.py  --input_data {input}
@@ -72,7 +72,7 @@ rule summaraize_paramsweep_adage:
         results_dir = directory("results/adage")
     shell:
         """ 
-        python biobombe_scripts/summarize_paramsweep.py -r {input} -f {output}
+        python biobombe_scripts/summarize_paramsweep.py -r {params.results_dir} -f {output}
         """
 
 rule run_tybalt:
@@ -86,7 +86,7 @@ rule run_tybalt:
         epochs = tybalt_paramsD['sweep_values']['epochs'],
         kappa = tybalt_paramsD['sweep_values']['kappa'],
         num_components = tybalt_paramsD['sweep_values']['num_components']
-    conda: 'environment.yaml'
+    conda: 'environment.yml'
     shell:
        """
        python vae.py    --input_data {input}
@@ -107,7 +107,7 @@ rule summaraize_paramsweep_tybalt:
     output: "results/tybalt/paramsweep_summary.txt"
     shell:
         """ 
-        python biobombe_scripts/summarize_paramsweep.py -r {input} -f {output}
+        python biobombe_scripts/summarize_paramsweep.py -r {params.results_dir} -f {output}
         """
 
 
