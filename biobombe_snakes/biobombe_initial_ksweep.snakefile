@@ -28,24 +28,17 @@ rule run_adage:
         expand("data/{sample}.scaled.tsv", sample = ['haptophyta_orthogroup'])
     output: 
         "results/adage/{sample}_lr{learning_rate}_bs{batch_size}_e{epochs}_sp{sparsity}_ns{noise}_numc{num_components}.tsv",
-    params: 
-        learning_rate = adage_paramsD['sweep_values']['learning_rate'],
-        batch_size = adage_paramsD['sweep_values']['batch_size'],
-        epochs = adage_paramsD['sweep_values']['epochs'],
-        sparsity = adage_paramsD['sweep_values']['sparsity'],
-        noise = adage_paramsD['sweep_values']['noise'],
-        num_components = adage_paramsD['sweep_values']['num_components']
     conda: 'environment.yml'
     shell:
        """
        python adage.py  --input_data {input}
-                        --learning_rate {params.learning_rate}
-                        --batch_size {params.batch_size}
-                        --epochs {params.epochs}
-                        --sparsity {params.sparsity}
-                        --noise {params.noise}
+                        --learning_rate {wildcards.learning_rate}
+                        --batch_size {wildcards.batch_size}
+                        --epochs {wildcards.epochs}
+                        --sparsity {wildcards.sparsity}
+                        --noise {wildcards.noise}
                         --output_filename {output}
-                        --num_components {params.num_components}
+                        --num_components {wildcards.num_components}
                         --subset_mad_genes
         """
 
@@ -65,22 +58,16 @@ rule run_tybalt:
         expand("data/{sample}.scaled.tsv", sample = ['haptophyta_orthogroup'])
     output:
         "results/tybalt/{sample}_lr{learning_rate}_bs{batch_size}_e{epochs}_k{kappa}_numc{num_components}.tsv"
-    params: 
-        learning_rate = tybalt_paramsD['sweep_values']['learning_rate'],
-        batch_size = tybalt_paramsD['sweep_values']['batch_size'],
-        epochs = tybalt_paramsD['sweep_values']['epochs'],
-        kappa = tybalt_paramsD['sweep_values']['kappa'],
-        num_components = tybalt_paramsD['sweep_values']['num_components']
     conda: 'environment.yml'
     shell:
        """
        python vae.py    --input_data {input}
-                        --learning_rate {params.learning_rate}
-                        --batch_size {params.batch_size}
-                        --epochs {params.epochs}
-                        --kappa {params.kappa}
+                        --learning_rate {wildcards.learning_rate}
+                        --batch_size {wildcards.batch_size}
+                        --epochs {wildcards.epochs}
+                        --kappa {wildcards.kappa}
                         --output_filename {output}
-                        --num_components {params.num_components}
+                        --num_components {wildcards.num_components}
                         --subset_mad_genes
         """
 
