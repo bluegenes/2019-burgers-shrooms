@@ -16,7 +16,7 @@ import glob
 # because we need to read in each namemap, it'd be better to work with a single sample at a time. so iterate through the COLUMNS of the
 # orthogroup table, rather than the rows (each orthogroup)
 
-def build_counttable(orthogroups_file, gtmap_dir, samplelist=None, namemap_dir=None, quant_dir=None):
+def build_counttable(orthogroups_file, gtmap_dir, samplelist=None, namemap_dir=None, quant_dir=None, verbose=False):
     # reading entire orthogroup table -->  pandas
     if not os.path.exists(gtmap_dir):
         os.mkdir(gtmap_dir)
@@ -30,7 +30,8 @@ def build_counttable(orthogroups_file, gtmap_dir, samplelist=None, namemap_dir=N
     orthogroups.columns =  orthogroups.columns.str.split('.').str[0] # split off the excess, leaving just the MMETSP id
 
     for sample in orthogroups.columns:
-        print(sample)
+        if verbose:
+            print(sample)
         if samplelist: # if we have a subset to go through, check that we care about this sample
             if sample not in samples:
                 continue
@@ -96,7 +97,8 @@ def build_counttable(orthogroups_file, gtmap_dir, samplelist=None, namemap_dir=N
             orthogroups[sample] = orthogroups.index.map(countD)
 
     og_quanttable_file = orthogroups_file.rsplit('.', 1)[0] + '.quant.tsv'
-    orthogroups.to_csv(path_or_buf=og_quanttable_file, sep = '\t', index=True)
+    #orthogroups.to_csv(path_or_buf=og_quanttable_file, sep = '\t', index=True)
+    orthogroups.to_csv(path_or_buf=og_quanttable_file, sep = '\t', index=True, na_rep='0')
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
@@ -105,5 +107,6 @@ if __name__ == '__main__':
     p.add_argument('--namemap_directory')
     p.add_argument('--quant_directory')
     p.add_argument('--gtmap_directory', default= "orthogroup_gtmaps")
+    p.add_argument('-v','--verbose', action='store_true', default=False)
     args = p.parse_args()
-    sys.exit(build_counttable(args.orthogroups, args.gtmap_directory, args.sample_list, args.namemap_directory, args.quant_directory))
+    sys.exit(build_counttable(args.orthogroups, args.gtmap_directory, args.sample_list, args.namemap_directory, args.quant_directory, args.verbose))
