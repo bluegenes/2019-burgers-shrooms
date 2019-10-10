@@ -35,7 +35,7 @@ tybalt_paramsD = tybalt_params.to_dict()
 
 rule all:
     input: 
-        "results/adage/paramsweep_summary.txt", "results/tybalt/paramsweep_summary.txt", "figures/viz_results/z_parameter_final_loss_adage.png"
+        "figures/viz_results/z_parameter_final_loss_adage.png", "figures/viz_results/z_parameter_final_loss_tybalt.png"
 
 
 rule run_adage:
@@ -118,7 +118,8 @@ rule visualize_tybalt_paramsweep:
     params:
         dataset_name = "haptophyta",
     output: 
-        "figures/viz_results/z_parameter_final_loss_adage.png"
+        "figures/viz_results/z_parameter_final_loss_adage.png",
+        "figures/viz_results/z_parameter_final_loss_tybalt.png"
     script:
         "visualize-parameter-sweep.r"
 
