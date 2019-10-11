@@ -96,3 +96,21 @@ rule train_models_shuffle:
                                              --outdir {params.out_dir}
                                              --shuffle
         """
+
+rule reconstruct_results:
+    input:
+    output:
+        recon_cost = "model_results/reconstruction_cost_{sample}.tsv",
+        recon_cost_fig = "model_results/figures/reconstruction_cost_{sample}.tsv",
+        vae_recon_cost_fig = "model_results/figures/vae_training_reconstruction_{sample}.tsv"
+    params:
+        results_dir = "model_results",
+        figures_dir = "model_results/figures"
+        #basename = {wildcards.sample}, # would this work?
+    conda:
+        "environment.yml"
+    shell:
+        """
+        "visualize_reconstruction.r"
+        """
+
