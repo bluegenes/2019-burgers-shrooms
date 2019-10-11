@@ -72,9 +72,9 @@ def preprocess_data(countfile, out_file=None, scale = "min_max", percTest = 0.1,
     # write scaled output
 
     if not out_file:
-        out_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.scaled.tsv')
+        out_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.processed.tsv.gz')
 
-    expr_norm.to_csv(out_file, sep='\t', header=True, index=True)
+    expr_norm.to_csv(out_file, sep='\t', header=True, index=True, compression='gzip', float_format='%.3g')
     #print(min_max_scaler.data_max_)
 
     ############################
