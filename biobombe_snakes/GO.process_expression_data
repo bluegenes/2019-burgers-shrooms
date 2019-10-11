@@ -1,3 +1,3 @@
 
 
-python process_expression_data.py data/haptophyta_orthogroup.quant.tsv --mad_file data/haptophyta_orthogroup.quant.mad.tsv
+python process_expression_data.py data/haptophyta_orthogroup.quant.tsv --mad --output_folder data

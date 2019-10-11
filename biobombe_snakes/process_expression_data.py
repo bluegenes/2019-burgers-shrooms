@@ -95,14 +95,20 @@ def preprocess_data(countfile, out_file=None, scale = "min_max", percTest = 0.1,
     # Sort on Median Absolute Deviation "mad" #
     ###########################################
 
-    ### THIS CURRENTLY ONLY DOES MAD FOR TRAINING SET, NOT ALL GENES, as per BioBombe notebooks
     if mad:
 
-        mad_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.processed.train.mad.' + str(num_mad_genes) + '.tsv.gz')
+        mad_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.processed.mad' + '.tsv.gz') #+ str(num_mad_genes) + '.tsv.gz')
         # sort
-        mad_genes_df = pd.DataFrame(trainDF.mad(axis=0).sort_values(ascending=False)).reset_index()
+        mad_genes_df = pd.DataFrame(expr_norm.mad(axis=0).sort_values(ascending=False)).reset_index()
         mad_genes_df.columns = ['gene_id', 'median_absolute_deviation']
+        # write
         mad_genes_df.to_csv(mad_file, sep='\t', index=False)
+
+        # same but for training set only
+        mad_train = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.processed.train.mad.' + '.tsv.gz') #+ str(num_mad_genes) + '.tsv.gz')
+        mad_train_genes_df = pd.DataFrame(trainDF.mad(axis=0).sort_values(ascending=False)).reset_index()
+        mad_train_genes_df.columns = ['gene_id', 'median_absolute_deviation']
+        mad_train_genes_df.to_csv(mad_train, sep='\t', index=False)
         #subset to only top genes
         #top_mad_genes = mad_genes_df.iloc[0:num_mad_genes, ].index
         # subset original dataset

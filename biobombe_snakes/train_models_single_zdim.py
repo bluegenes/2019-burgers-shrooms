@@ -2,7 +2,7 @@
 2018 Gregory Way, modified 2019 N. Tessa Pierce
 #2.ensemble-z-analysis/scripts/train_models_given_z.py
 
-# train_models.py
+# train_modelsi_single_zdim.py
 
 This script will train various compression models given a specific z dimension.
 Each model will train several times with different initializations.
@@ -120,13 +120,13 @@ def train_models(basename, input_train, input_test, zdim, paramsD, out_dir, num_
     else:
         file_pre = f'{basename}_{zdim}_components_'
 
-    recon_file = os.path.join(train_dir, f'{file_pre}reconstruction.tsv'
-    co_file = os.path.join(train_dir, f'{file_pre}sample_corr.tsv.gz'
-    co_g_file = os.path.join(train_dir, f'{file_pre}gene_corr.tsv.gz'
+    recon_file = os.path.join(train_dir, f'{file_pre}reconstruction.tsv')
+    co_file = os.path.join(train_dir, f'{file_pre}sample_corr.tsv.gz')
+    co_g_file = os.path.join(train_dir, f'{file_pre}gene_corr.tsv.gz')
     tybalt_hist_file = os.path.join(train_dir,
-                                    f'{file_pre}tybalt_training_hist.tsv'
+                                    f'{file_pre}tybalt_training_hist.tsv')
     adage_hist_file = os.path.join(train_dir,
-                                   f'{file_pre}adage_training_hist.tsv'
+                                   f'{file_pre}adage_training_hist.tsv')
 
     # Load Preprocessed Data --> could provide option to input raw data and just call process data from here,
     # but don't want to process multiple times, esp since we're running this independently on each zdim
@@ -166,7 +166,7 @@ def train_models(basename, input_train, input_test, zdim, paramsD, out_dir, num_
 
 # Save population of models in specific folder
     comp_out_dir = os.path.join(out_dir, 'ensemble_z_matrices',
-                                f'{basename}_components_{zdim}'
+                                f'{basename}_components_{zdim}')
     if not os.path.exists(comp_out_dir):
         os.makedirs(comp_out_dir)
 
@@ -179,7 +179,7 @@ def train_models(basename, input_train, input_test, zdim, paramsD, out_dir, num_
 
         np.random.seed(seed)
 
-        seed_file = os.path.join(comp_out_dir, f'model_{seed}'
+        seed_file = os.path.join(comp_out_dir, f'model_{seed}')
 
         if shuffle:
             seed_file = f'{seed_file}_shuffled'
@@ -200,9 +200,9 @@ def train_models(basename, input_train, input_test, zdim, paramsD, out_dir, num_
             dm.transform(how='zeroone')
 
         # Fit models
-        dm.pca(n_components=num_components, transform_test_df=True)
-        dm.ica(n_components=num_components, transform_test_df=True)
-        dm.nmf(n_components=num_components, transform_test_df=True)
+        dm.pca(n_components=zdim, transform_test_df=True)
+        dm.ica(n_components=zdim, transform_test_df=True)
+        dm.nmf(n_components=zdim, transform_test_df=True)
 
         dm.nn(n_components=zdim,
               model='tybalt',
@@ -351,7 +351,7 @@ if __name__ == '__main__':
                         help='number of different seeds to run on current data')
     p.add_argument('-r', '--shuffle', action='store_true',
                         help='randomize gene expression data for negative control')
-    p.add_argument('--madfile', help='filename containing genes sorted by median absolute deviation', default=None)
+    p.add_argument('--input_mad', help='filename containing genes sorted by median absolute deviation', default=None)
     p.add_argument('-m', '--num_mad_genes', default=8000,
                         help='subset num genes based on median absolute deviation')
     args = p.parse_args()
