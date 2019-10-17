@@ -343,7 +343,7 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('input_train', help="input train data tsv")
     p.add_argument('input_test', help="input test data tsv")
-    p.add_argument('--madfile', help="input mad genes tsv")
+    p.add_argument('--input_mad', help="input mad genes tsv")
     p.add_argument('--basename', help= "basename to use in file names")
     p.add_argument('-z', '--zdim', help='dimensionality of z. prev called num_components')
     p.add_argument('-p', '--paramsfile',
@@ -371,6 +371,6 @@ if __name__ == '__main__':
     # start by just allowing a single zdim? Call once for each zdim.
     paramsD = zsweep_paramsD[zdim] #subset to just this z dimension
 
-    sys.exit(train_models(args.basename, args.input_train, args.input_test, int(zdim), paramsD, args.outdir, int(args.num_seeds), args.shuffle, args.madfile, int(args.num_mad_genes)))
+    sys.exit(train_models(args.basename, args.input_train, args.input_test, int(zdim), paramsD, args.outdir, int(args.num_seeds), args.shuffle, args.input_mad, int(args.num_mad_genes)))
 
 

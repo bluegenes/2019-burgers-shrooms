@@ -1,6 +1,7 @@
 """
 Author: N Tessa Pierce, UC Davis Lab for Data Intensive Biology
-Run: snakemake -s  biobombe_sequential_compression.snakefile --use-conda -n
+Run: snakemake -s  biobombe_sequential_compression.snakefile --use-conda # use -n for dry run
+# note: currently working on ubuntu, NOT working on osx
 """
 
 import os
