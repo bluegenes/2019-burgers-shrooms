@@ -39,6 +39,7 @@ and training histories for Tybalt and ADAGE models. The population of models
 """
 
 import os
+import sys
 import argparse
 import numpy as np
 import pandas as pd
@@ -341,12 +342,13 @@ if __name__ == '__main__':
 
     p = argparse.ArgumentParser()
     p.add_argument('input_train', help="input train data tsv")
-    p.add_argument('input_test', help="input test data tsv ")
-    p.add_argument('-n' '--data_basename', help= "basename to use in file names")
-    p.add_argument('-z', '--z_dim', help='dimensionality of z. prev called num_components')
+    p.add_argument('input_test', help="input test data tsv")
+    p.add_argument('--madfile', help="input mad genes tsv")
+    p.add_argument('--basename', help= "basename to use in file names")
+    p.add_argument('-z', '--zdim', help='dimensionality of z. prev called num_components')
     p.add_argument('-p', '--paramsfile',
                         help='text file optimal hyperparameter assignment for z')
-    p.add_argument('-o', '--out_dir', help='where to save the output files')
+    p.add_argument('-o', '--outdir', help='where to save the output files')
     p.add_argument('-s', '--num_seeds', default=5,
                         help='number of different seeds to run on current data')
     p.add_argument('-r', '--shuffle', action='store_true',
@@ -356,18 +358,19 @@ if __name__ == '__main__':
                         help='subset num genes based on median absolute deviation')
     args = p.parse_args()
 
-    zsweep_params = read_counts_or_params(args.paramsfile)
+    zsweep_params = read_params(args.paramsfile)
 
     zsweep_paramsD = zsweep_params.to_dict()
 
     # check that the chosen zdims exist in the paramsD
+    zdim = str(args.zdim)
     component_error = f"{zdim} is not found in {zsweep_paramsD} - either add it to the file or choose a different number of components"
     #assert str(num_components) in param_df.columns, component_error
-    assert str(zdim) in zsweep_params.keys(), component_error
+    assert zdim in zsweep_params.keys(), component_error
 
     # start by just allowing a single zdim? Call once for each zdim.
-    paramsD = zsweep_paramsD[str(zdim)] #subset to just this z dimension
+    paramsD = zsweep_paramsD[zdim] #subset to just this z dimension
 
-    sys.exit(train_models(args.data_basename, args.input_train, args.input_test, int(args.zdim), paramsD, args.out_dir, int(args.num_seeds), args.shuffle, args.madfile, int(args.num_mad_genes)))
+    sys.exit(train_models(args.basename, args.input_train, args.input_test, int(zdim), paramsD, args.outdir, int(args.num_seeds), args.shuffle, args.madfile, int(args.num_mad_genes)))
 
 
