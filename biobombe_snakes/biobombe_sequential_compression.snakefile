@@ -59,8 +59,7 @@ rule train_models:
         'environment.yml'
     shell:
         """
-        python train_models_single_zdim.py   --input_train {input.train}
-                                             --input_test {input.test}
+        python train_models_single_zdim.py   {input.train} {input.test}
                                              --input_mad {input.mad}
                                              --basename {wildcards.sample}
                                              --paramsfile {params.paramsF}
@@ -87,8 +86,7 @@ rule train_models_shuffle:
         'environment.yml'
     shell:
         """
-        python train_models_single_zdim.py   --input_train {input.train}
-                                             --input_test {input.test}
+        python train_models_single_zdim.py  {input.train} {input.test}
                                              --input_mad {input.mad}
                                              --basename {wildcards.sample}
                                              --paramsfile {params.paramsF}
