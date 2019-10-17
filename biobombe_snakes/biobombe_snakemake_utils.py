@@ -12,7 +12,7 @@ def read_params(pfile):
         except Exception as e:
             sys.stderr.write(f"\n\tError: {pfile} file is not properly formatted. Please fix.\n\n")
             print(e)
-    elif '.xls' in countfile:
+    elif '.xls' in pfile:
         try:
             paramsDF = pd.read_excel(pfile, dtype=str, index_col=0)
         except Exception as e:
