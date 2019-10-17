@@ -2,12 +2,14 @@ name: biobombe
 channels:
 - conda-forge
 dependencies:
+- pip
 - conda-forge::python=3.6
 - conda-forge::pandas=0.23.4
 - conda-forge::xlrd=1.1.0
 - conda-forge::numpy=1.15.2
 - conda-forge::dask-searchcv=0.2.0
 - conda-forge::seaborn=0.9.0
+- conda-forge::keras=2.3.1
 - conda-forge::scikit-learn=0.20.1
 - conda-forge::dask-searchcv=0.2.0
 - conda-forge::jupyter=1.0.0
@@ -16,6 +18,7 @@ dependencies:
 - conda-forge::openpyxl=2.5.1
 - conda-forge::requests=2.21.0
 - conda-forge::lxml=4.3.1
+- conda-forge::mkl-service=2.3.0
 - conda-forge::r-dplyr=0.7.6
 - conda-forge::r-tidyr=0.8.0
 - conda-forge::r-readr=1.1.1

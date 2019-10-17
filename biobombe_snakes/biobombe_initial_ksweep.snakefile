@@ -8,11 +8,13 @@ import pandas as pd
 from biobombe_snakemake_utils import read_params
 
 
-adage_params = read_params("config/initial_z_parameter_sweep_adage_MMETSP.tsv")
+#adage_params = read_params("config/initial_z_parameter_sweep_adage_MMETSP.tsv")
+adage_params = read_params("config/initial_z_parameter_sweep_adage_MMETSP_test.tsv")
 adage_params['sweep_values'] = adage_params['sweep_values'].str.split(',')
 adage_paramsD = adage_params.to_dict()
 
-tybalt_params = read_params("config/initial_z_parameter_sweep_tybalt_MMETSP.tsv")
+#tybalt_params = read_params("config/initial_z_parameter_sweep_tybalt_MMETSP.tsv")
+tybalt_params = read_params("config/initial_z_parameter_sweep_tybalt_MMETSP_test.tsv")
 tybalt_params['sweep_values'] = tybalt_params['sweep_values'].str.split(',')
 tybalt_paramsD = tybalt_params.to_dict()
 

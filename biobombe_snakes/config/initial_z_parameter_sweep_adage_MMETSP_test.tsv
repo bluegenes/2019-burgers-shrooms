@@ -1,0 +1,8 @@
+parameter	sweep_values
+learning_rate	0.00005,0.00001
+batch_size	10,25
+epochs	100
+sparsity	0,0.000001
+noise	0,0.1
+num_components	5,25
+weights	tied
