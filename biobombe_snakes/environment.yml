@@ -1,6 +1,7 @@
 name: biobombe
 channels:
 - conda-forge
+- bioconda
 dependencies:
 - pip
 - conda-forge::python=3.6

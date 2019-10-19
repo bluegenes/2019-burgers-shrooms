@@ -21,19 +21,19 @@ def read_counts(countfile):
         if '.csv' in countfile:
             separator = ','
         try:
-            counts = pd.read_csv(countfile, dtype=str, sep=separator, index_col=0)
+            counts = pd.read_csv(countfile, dtype=str, sep=separator, index_col=0, compression='infer')
         except Exception as e:
             sys.stderr.write(f"\n\tError: {countfile} file is not properly formatted. Please fix.\n\n")
             print(e)
     elif '.xls' in countfile:
         try:
-            counts = pd.read_excel(countfile, dtype=str, index_col=0)
+            counts = pd.read_excel(countfile, dtype=str, index_col=0, compression='infer')
         except Exception as e:
             sys.stderr.write(f"\n\tError: {countfile} file is not properly formatted. Please fix.\n\n")
             print(e)
     return counts
 
-def preprocess_data(countfile, out_file=None, scale = "min_max", percTest = 0.1, mad= False, num_mad_genes = 5000, out_folder = ""):
+def preprocess_data(countfile, out_file=None, scale = False, scale_method = "min_max", percTest = 0.1, mad= False, num_mad_genes = 8000, out_folder = ""):
     """
     Zero-one scale the expression data
 
@@ -55,14 +55,20 @@ def preprocess_data(countfile, out_file=None, scale = "min_max", percTest = 0.1,
 
     expr_data = expr_data.sort_index() # sort by gene name
 
-    if scale == "min_max":
-       # Zero-one normalize
-        min_max_scaler = preprocessing.MinMaxScaler()
-        expr_scaled = min_max_scaler.fit_transform(expr_data.T)
-    elif scale == 'zscore':
-        expr_scaled = preprocessing.scale(expr_data.T, axis=0)
-
-    expr_norm = pd.DataFrame(expr_scaled, index=expr_data.columns, columns=expr_data.index).T  # transform back
+    if scale:
+        if scale_method == "min_max":
+           # Zero-one normalize
+            min_max_scaler = preprocessing.MinMaxScaler()
+            expr_scaled = min_max_scaler.fit_transform(expr_data.T)
+            file_suffix = '.processed.zeroone.tsv.gz'
+        elif scale_method == 'zscore':
+            expr_scaled = preprocessing.scale(expr_data.T, axis=0)
+            file_suffix = '.processed.zscore.tsv.gz'
+        
+        expr_norm = pd.DataFrame(expr_scaled, index=expr_data.columns, columns=expr_data.index).T  # transform back
+    else:
+        expr_norm = expr_data
+        file_suffix = '.processed.tsv.gz'
 
     # check that output folder exists, make it if not
     if out_folder:
@@ -72,7 +78,7 @@ def preprocess_data(countfile, out_file=None, scale = "min_max", percTest = 0.1,
     # write scaled output
 
     if not out_file:
-        out_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.processed.tsv.gz')
+        out_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + file_suffix)
 
     expr_norm.to_csv(out_file, sep='\t', header=True, index=True, compression='gzip', float_format='%.3g')
     #print(min_max_scaler.data_max_)
@@ -84,11 +90,11 @@ def preprocess_data(countfile, out_file=None, scale = "min_max", percTest = 0.1,
     trainDF, testDF = train_test_split(expr_norm, test_size=percTest, random_state =42) #, shuffle=False
 
     # write training set to file
-    train_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.processed.train.tsv.gz')
+    train_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.train' + file_suffix)
     trainDF.to_csv(train_file, sep='\t', compression='gzip', float_format='%.3g')
 
     # write test set to file
-    test_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.processed.test.tsv.gz')
+    test_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.test' + file_suffix )
     testDF.to_csv(test_file, sep='\t', compression='gzip', float_format='%.3g')
 
     ###########################################
@@ -97,18 +103,19 @@ def preprocess_data(countfile, out_file=None, scale = "min_max", percTest = 0.1,
 
     if mad:
 
-        mad_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.processed.mad' + '.tsv.gz') #+ str(num_mad_genes) + '.tsv.gz')
+        mad_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.mad' + file_suffix) #+ str(num_mad_genes) + '.tsv.gz')
         # sort
+        #mad_genes_df = pd.DataFrame(expr_norm.mad(axis=1).sort_values(ascending=False)).reset_index()
         mad_genes_df = pd.DataFrame(expr_norm.mad(axis=0).sort_values(ascending=False)).reset_index()
         mad_genes_df.columns = ['gene_id', 'median_absolute_deviation']
         # write
-        mad_genes_df.to_csv(mad_file, sep='\t', index=False)
+        mad_genes_df.to_csv(mad_file, sep='\t', index=False, compression='gzip', float_format='%.3g')
 
         # same but for training set only
-        mad_train = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.processed.train.mad.' + '.tsv.gz') #+ str(num_mad_genes) + '.tsv.gz')
+        mad_train = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.train.mad' + str(num_mad_genes) + file_suffix) #+ str(num_mad_genes) + '.tsv.gz')
         mad_train_genes_df = pd.DataFrame(trainDF.mad(axis=0).sort_values(ascending=False)).reset_index()
         mad_train_genes_df.columns = ['gene_id', 'median_absolute_deviation']
-        mad_train_genes_df.to_csv(mad_train, sep='\t', index=False)
+        mad_train_genes_df.to_csv(mad_train, sep='\t', index=False, compression='gzip', float_format='%.3g')
         #subset to only top genes
         #top_mad_genes = mad_genes_df.iloc[0:num_mad_genes, ].index
         # subset original dataset
@@ -122,11 +129,12 @@ if __name__ == '__main__':
 
     p = argparse.ArgumentParser()
     p.add_argument("countfile", help = "csv,tsv,or xls rnaseq gene expression table")
-    p.add_argument("-s", "--scale",help="method to scale expression matrix", default='min_max')
+    p.add_argument("--scale", help="true/false: scale the expression data?", action="store_true", default=False)
+    p.add_argument("--scale_method",help="method to scale expression matrix", default='min_max')
     p.add_argument("--percTest", help="percent of data to set aside as test set. Training set will be 1-percTest", default = 0.1, type=float)
     p.add_argument("--mad", help="subset mad genes", action="store_true", default=False)
     p.add_argument("--output_folder", default="")
     p.add_argument("--output_filename", default=None)
-    p.add_argument("--num_mad_genes", help="number of highest median absolute deviation genes to output", type=int, default=5000)
+    p.add_argument("--num_mad_genes", help="number of highest median absolute deviation genes to output", type=int, default=8000)
     args = p.parse_args()
-    sys.exit(preprocess_data(args.countfile, args.output_filename, args.scale, args.percTest, args.mad, args.num_mad_genes, args.output_folder))
+    sys.exit(preprocess_data(args.countfile, args.output_filename, args.scale, args.scale_method, args.percTest, args.mad, args.num_mad_genes, args.output_folder))

@@ -136,29 +136,21 @@ def train_models(basename, input_train, input_test, zdim, paramsD, out_dir, num_
 
     # Determine most variably expressed genes and subset
     if madfile is not None:
-        mad = read_counts_or_params(madfile)
+        mad_genes_df = read_counts_or_params(madfile)
 
         #data_base = os.path.join('..', '0.expression-download', 'data')
         #mad_file = os.path.join(data_base, '{}_mad_genes.tsv'.format(dataset))
 
         #mad_genes_df = pd.read_table(mad_file)
-        mad_genes = mad_genes_df.iloc[0:subset_mad_genes, ].gene_id.astype(str)
-
+        mad_genes = mad_genes_df.iloc[0:num_mad_genes, ].index.astype(str)
         rnaseq_train_df = rnaseq_train_df.reindex(mad_genes, axis='columns')
         rnaseq_test_df = rnaseq_test_df.reindex(mad_genes, axis='columns')
 
 
-########
-#WAIT. Does this do the normalization here? what is the point of preprocessing, then? Just preprocess and subset mad here?
-#####
+# Initialize DataModel class 
 
-
-# Initialize DataModel class with pancancer data
-
-###### note: this class lives in tybalt? check.
     dm = DataModel(df=rnaseq_train_df, test_df=rnaseq_test_df)
-    dm.transform(how='zeroone')
-
+    dm.transform(how='zeroone') # data normalization happens here, don't need to feed in normalized data
 # Set seed and list of algorithms for compression
     np.random.seed(1234)
     random_seeds = np.random.randint(0, high=1000000, size=num_seeds)
@@ -343,7 +335,7 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('input_train', help="input train data tsv")
     p.add_argument('input_test', help="input test data tsv")
-    p.add_argument('--input_mad', help="input mad genes tsv")
+    p.add_argument('--input_mad', help='filename containing genes sorted by median absolute deviation', default=None)
     p.add_argument('--basename', help= "basename to use in file names")
     p.add_argument('-z', '--zdim', help='dimensionality of z. prev called num_components')
     p.add_argument('-p', '--paramsfile',
@@ -353,7 +345,6 @@ if __name__ == '__main__':
                         help='number of different seeds to run on current data')
     p.add_argument('-r', '--shuffle', action='store_true',
                         help='randomize gene expression data for negative control')
-    p.add_argument('--input_mad', help='filename containing genes sorted by median absolute deviation', default=None)
     p.add_argument('-m', '--num_mad_genes', default=8000,
                         help='subset num genes based on median absolute deviation')
     args = p.parse_args()
