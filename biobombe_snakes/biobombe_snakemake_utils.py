@@ -8,13 +8,13 @@ def read_params(pfile):
     if '.tsv' in pfile:
         separator = '\t'
         try:
-            paramsDF = pd.read_csv(pfile, dtype=str, sep=separator, index_col=0, compression= "infer")
+            paramsDF = pd.read_csv(pfile, sep=separator, index_col=0, compression= "infer")
         except Exception as e:
             sys.stderr.write(f"\n\tError: {pfile} file is not properly formatted. Please fix.\n\n")
             print(e)
     elif '.xls' in pfile:
         try:
-            paramsDF = pd.read_excel(pfile, dtype=str, index_col=0, compression= "infer")
+            paramsDF = pd.read_excel(pfile, index_col=0, compression= "infer")
         except Exception as e:
             sys.stderr.write(f"\n\tError: {pfile} file is not properly formatted. Please fix.\n\n")
             print(e)
@@ -27,13 +27,13 @@ def read_counts_or_params(countfile):
         if '.csv' in countfile:
             separator = ','
         try:
-            counts = pd.read_csv(countfile, dtype=str, sep=separator, index_col=0, compression= "infer")
+            counts = pd.read_csv(countfile, sep=separator, index_col=0, compression= "infer")
         except Exception as e:
             sys.stderr.write(f"\n\tError: {countfile} file is not properly formatted. Please fix.\n\n")
             print(e)
     elif '.xls' in countfile:
         try:
-            counts = pd.read_excel(countfile, dtype=str, index_col=0, compression= "infer")
+            counts = pd.read_excel(countfile, index_col=0, compression= "infer")
         except Exception as e:
             sys.stderr.write(f"\n\tError: {countfile} file is not properly formatted. Please fix.\n\n")
             print(e)
