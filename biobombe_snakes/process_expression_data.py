@@ -21,13 +21,13 @@ def read_counts(countfile):
         if '.csv' in countfile:
             separator = ','
         try:
-            counts = pd.read_csv(countfile, dtype=str, sep=separator, index_col=0, compression='infer')
+            counts = pd.read_csv(countfile, sep=separator, index_col=0, compression='infer')
         except Exception as e:
             sys.stderr.write(f"\n\tError: {countfile} file is not properly formatted. Please fix.\n\n")
             print(e)
     elif '.xls' in countfile:
         try:
-            counts = pd.read_excel(countfile, dtype=str, index_col=0, compression='infer')
+            counts = pd.read_excel(countfile, index_col=0, compression='infer')
         except Exception as e:
             sys.stderr.write(f"\n\tError: {countfile} file is not properly formatted. Please fix.\n\n")
             print(e)
@@ -106,7 +106,7 @@ def preprocess_data(countfile, out_file=None, scale = False, scale_method = "min
         mad_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.mad' + file_suffix) #+ str(num_mad_genes) + '.tsv.gz')
         # sort
         #mad_genes_df = pd.DataFrame(expr_norm.mad(axis=1).sort_values(ascending=False)).reset_index()
-        mad_genes_df = pd.DataFrame(expr_norm.mad(axis=0).sort_values(ascending=False)).reset_index()
+        mad_genes_df = pd.DataFrame(expr_norm.mad(axis=1).sort_values(ascending=False)).reset_index()
         mad_genes_df.columns = ['gene_id', 'median_absolute_deviation']
         # write
         mad_genes_df.to_csv(mad_file, sep='\t', index=False, compression='gzip', float_format='%.3g')
