@@ -1,0 +1,20 @@
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python=2.7
+  - scipy
+  - blast
+  - diamond
+  - mcl
+  - fastme
+  - dlcpar
+  - mafft
+  - fasttree
+  - muscle
+  - raxml
+  - iqtree
+  - bzip2
+  - mmseqs2
+  - pip
