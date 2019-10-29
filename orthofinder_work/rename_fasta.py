@@ -50,7 +50,7 @@ def rename_fasta(speciesID_file, seqID_file, pep_dir, out_dir):
         # do last species
         pep_fasta = os.path.join(pep_dir, speciesD[species])
         pep_fasta_out = os.path.join(out_dir, f"Species{species}.fa")
-        rename_single_fasta(pep_fasta, seqD, pep_fasta_out)
+        rename_single_fasta(str(species), pep_fasta, seqD, pep_fasta_out)
 
 # Sequence_IDs.txt file:
 # 0_0: Transcript_0|m.1 Transcript_0|g.1  ORF Transcript_0|g.1 Transcript_0|m.1 type:3prime_partial len:404 (-) Transcript_0:1-1209(-)
