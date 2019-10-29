@@ -63,15 +63,13 @@ rule diamond_makedb:
         os.path.join(ortho_dir, "diamondDBSpecies{s1}.dmnd")
     conda: 
         "orthofinder_diamond.yml"
-    params:
-        prefix = "diamondDBSpecies"
     shell:
         """
         diamond makedb --in {input} --db {output}
         """
 
 # for orthofinder, output needs to be of form: Blast{species}_{species}.txt.gz
-rule diamond_blastx:
+rule diamond_blastp:
     input: 
         pep = os.path.join(ortho_dir,"Species{s1}.fa"),
         db =  os.path.join(ortho_dir,"diamondDBSpecies{s2}.dmnd")
@@ -81,6 +79,6 @@ rule diamond_blastx:
         "orthofinder_diamond.yml"
     shell:
         """
-        diamond blastx -d {input.db} -q {input.pep} -o {output}
+        diamond blastp -d {input.db} -q {input.pep} -o {output}
         """
 
