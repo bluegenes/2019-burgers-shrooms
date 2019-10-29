@@ -10,9 +10,10 @@ from itertools import product
 
 
 #ortho_dir = "/pylon5/mc5phkp/ntpierce/mmetsp_orthofinder_results/Results_oct_2019_1/WorkingDirectory/"
-ortho_dir =  "./" #"/pylon5/mc5phkp/ntpierce/mmetsp_pep"
-pep_dir =  "../mmetsp_info/mmetsp_pep" #"/pylon5/mc5phkp/ntpierce/mmetsp_pep"
-species_ids = "SpeciesIDs.txt"
+pep_dir = "/home/ntpierce/2019-burgers-shrooms/mmetsp_info/mmetsp_pep"
+ortho_dir = "/home/ntpierce/2019-burgers-shrooms/orthofinder_work/orthfinder_diamond_blast"
+species_ids = "/home/ntpierce/2019-burgers-shrooms/orthofinder_work/SpeciesIDs.txt"
+sequence_ids = "/home/ntpierce/2019-burgers-shrooms/orthofinder_work/SequenceIDs.txt"
 
 # build dictionary of speciesID: pepfile
 speciesD = {}
@@ -36,15 +37,28 @@ rule all:
     input: 
         output_blast_filenames
 
+rule rename_fasta_files_and_contigs:
+    input: 
+        speciesIDfile = species_ids,
+        seqIDfile = sequence_ids,
+        peptide_dir = pep_dir,
+    output: 
+    conda: 
+        "orthofinder_diamond.yml"
+    shell:
+        """
+        python rename_fasta.py --speciesIDs {input.speciesIDfile} --seqIDs {input.seqIDfile} --pep_dir {input.peptide_dir}, -o {output}
+        """
+
 
 rule diamond_makedb:
     input: 
-        pep = os.path.join(pep_dir, speciesD[{s1}])
+        pep = lambda wildcards: os.path.join(pep_dir, speciesD[wildcards.s1])
         #pep = "Species{s1}.fa",
     output: 
-        "diamondDBSpecies{s1}.dmnd"
+        os.path.join(ortho_dir, "diamondDBSpecies{s1}.dmnd")
     conda: 
-        "diamond_environment.yml"
+        "orthofinder_diamond.yml"
     params:
         prefix = "diamondDBSpecies"
     shell:
@@ -60,7 +74,7 @@ rule diamond_blastx:
     output:
         os.path.join(ortho_dir,"Blast{s1}_{s2}.txt.gz")
     conda: 
-        "diamond_environment.yml"
+        "orthofinder_diamond.yml"
     shell:
         """
         diamond blastx -d {input.db} -q {input.pep} -o {output}

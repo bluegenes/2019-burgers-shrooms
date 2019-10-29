@@ -3,4 +3,7 @@ channels:
   - bioconda
   - defaults
 dependencies:
+  - python>=3.6
+  - screed
+  - pandas
   - diamond=0.9.26
