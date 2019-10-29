@@ -9,8 +9,17 @@ import itertools
 from itertools import product
 
 
-ortho_dir = "/pylon5/mc5phkp/ntpierce/mmetsp_orthofinder_results/Results_oct_2019_1/WorkingDirectory/"
-pep_dir = "/pylon5/mc5phkp/ntpierce/mmetsp_pep"
+#ortho_dir = "/pylon5/mc5phkp/ntpierce/mmetsp_orthofinder_results/Results_oct_2019_1/WorkingDirectory/"
+ortho_dir =  "./" #"/pylon5/mc5phkp/ntpierce/mmetsp_pep"
+pep_dir =  "../mmetsp_info/mmetsp_pep" #"/pylon5/mc5phkp/ntpierce/mmetsp_pep"
+species_ids = "SpeciesIDs.txt"
+
+# build dictionary of speciesID: pepfile
+speciesD = {}
+with open(species_ids, 'r') as f:
+    for line in f:
+        num, pepfile = line.split(": ")
+        speciesD[num] = pepfile
 
 def build_outputs(num_species=658):
     filenames = []
@@ -27,19 +36,21 @@ rule all:
     input: 
         output_blast_filenames
 
-#rule diamond_makedb:
-#    input: 
-#        pep = "Species{s1}.fa",
-#    output: 
-#        "diamondDBSpecies{s1}.dmnd"
-#    conda: 
-#        "diamond_environment.yml"
-#    params:
-#        prefix = "diamondDBSpecies397"
-#    shell:
-#        """
-#        diamond makedb --in {input} -d {output}
-#        """
+
+rule diamond_makedb:
+    input: 
+        pep = os.path.join(pep_dir, speciesD[{s1}])
+        #pep = "Species{s1}.fa",
+    output: 
+        "diamondDBSpecies{s1}.dmnd"
+    conda: 
+        "diamond_environment.yml"
+    params:
+        prefix = "diamondDBSpecies"
+    shell:
+        """
+        diamond makedb --in {input} -d {params.prefix}
+        """
 
 # for orthofinder, output needs to be of form: Blast{species}_{species}.txt.gz
 rule diamond_blastx:
