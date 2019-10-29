@@ -45,7 +45,6 @@ def rename_fasta(speciesID_file, seqID_file, pep_dir, out_dir):
                 rename_single_fasta(sp, pep_fasta, seqD, pep_fasta_out)
                 # clear previous, dictionary
                 prev_species = int(species)
-                print(species)
                 seqD = {}
             seqD[longID] = contigNum
         # do last species

@@ -32,7 +32,7 @@ def build_outputs(num_species=658):
         filenames.append(os.path.join(ortho_dir, f"Blast{i}_{j}.txt.gz"))
     return filenames
 
-num_species =  int(658)  # can count this from *fa files in directory
+num_species =  int(4) #int(658)  # can count this from *fa files in directory
 output_blast_filenames = build_outputs(num_species)
 
 rule all:
@@ -46,12 +46,13 @@ rule rename_fasta_files_and_contigs:
     output: 
          pepfiles
     params:
-        peptide_dir = pep_dir
+        peptide_dir = pep_dir,
+        out_dir = ortho_dir,
     conda: 
         "orthofinder_diamond.yml"
     shell:
         """
-        python rename_fasta.py --speciesIDs {input.speciesIDfile} --seqIDs {input.seqIDfile} --pep_dir {params.peptide_dir}, -o {output}
+        python rename_fasta.py --speciesIDs {input.speciesIDfile} --seqIDs {input.seqIDfile} --pep_dir {params.peptide_dir} -o {params.out_dir}
         """
 
 rule diamond_makedb:
