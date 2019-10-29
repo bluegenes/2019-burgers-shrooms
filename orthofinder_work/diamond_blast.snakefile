@@ -32,7 +32,7 @@ def build_outputs(num_species=658):
         filenames.append(os.path.join(ortho_dir, f"Blast{i}_{j}.txt.gz"))
     return filenames
 
-num_species =  int(4) #int(658)  # can count this from *fa files in directory
+num_species =  int(658)  # can count this from *fa files in directory
 output_blast_filenames = build_outputs(num_species)
 
 rule all:
@@ -67,7 +67,7 @@ rule diamond_makedb:
         prefix = "diamondDBSpecies"
     shell:
         """
-        diamond makedb --in {input} -d {params.prefix}
+        diamond makedb --in {input} --db {output}
         """
 
 # for orthofinder, output needs to be of form: Blast{species}_{species}.txt.gz
