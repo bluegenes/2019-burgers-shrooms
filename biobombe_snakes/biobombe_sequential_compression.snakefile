@@ -10,7 +10,8 @@ import pandas as pd
 from biobombe_snakemake_utils import read_params
 
 
-paramsfile = "config/z_parameter_sweep_MMETSP.tsv"
+#paramsfile = "config/z_parameter_sweep_MMETSP.tsv"
+paramsfile = "config/z_parameter_sweep_MMETSP_test.tsv"
 zsweep_params = read_params(paramsfile)
 zsweep_paramsD = zsweep_params.to_dict()
 # this dictionary is  {zdim: {variable: value, var2: val2}}

@@ -1,0 +1,6 @@
+orthofinder_work/slurm-*.out
+orthofinder_work/slurm-*.err
+biobombe_snakes/.snakemake/
+biobombe_snakes/__pycache__
+data/*
+

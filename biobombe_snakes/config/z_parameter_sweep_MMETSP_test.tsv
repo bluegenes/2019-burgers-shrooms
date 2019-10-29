@@ -1,0 +1,10 @@
+num_components	2	3
+vae_lr	0.0025	0.0025
+vae_batch_size	100	100
+vae_epochs	100	100
+vae_kappa	0.5	0.5
+dae_lr	0.001	0.001
+dae_batch_size	50	50
+dae_epochs	100	100
+dae_sparsity	0	0
+dae_noise	0.1	0.1
