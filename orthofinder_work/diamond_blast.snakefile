@@ -11,7 +11,7 @@ from itertools import product
 
 #ortho_dir = "/pylon5/mc5phkp/ntpierce/mmetsp_orthofinder_results/Results_oct_2019_1/WorkingDirectory/"
 pep_dir = "/home/ntpierce/2019-burgers-shrooms/mmetsp_info/mmetsp_pep"
-ortho_dir = "/home/ntpierce/2019-burgers-shrooms/orthofinder_work/orthfinder_diamond_blast"
+ortho_dir = "/home/ntpierce/2019-burgers-shrooms/orthofinder_work/orthfinder_blast_results"
 species_ids = "/home/ntpierce/2019-burgers-shrooms/orthofinder_work/SpeciesIDs.txt"
 sequence_ids = "/home/ntpierce/2019-burgers-shrooms/orthofinder_work/SequenceIDs.txt"
 
@@ -22,6 +22,8 @@ with open(species_ids, 'r') as f:
         num, pepfile = line.split(": ")
         speciesD[num] = pepfile
 
+pepfiles = [os.path.join(ortho_dir, f"Species{x}.fa") for x in speciesD.keys()]
+
 def build_outputs(num_species=658):
     filenames = []
     for i, j in itertools.product(range(num_species), repeat=2):
@@ -30,7 +32,7 @@ def build_outputs(num_species=658):
         filenames.append(os.path.join(ortho_dir, f"Blast{i}_{j}.txt.gz"))
     return filenames
 
-num_species = int(658)  # can count this from *fa files in directory
+num_species =  int(658)  # can count this from *fa files in directory
 output_blast_filenames = build_outputs(num_species)
 
 rule all:
@@ -41,20 +43,21 @@ rule rename_fasta_files_and_contigs:
     input: 
         speciesIDfile = species_ids,
         seqIDfile = sequence_ids,
-        peptide_dir = pep_dir,
     output: 
+         pepfiles
+    params:
+        peptide_dir = pep_dir
     conda: 
         "orthofinder_diamond.yml"
     shell:
         """
-        python rename_fasta.py --speciesIDs {input.speciesIDfile} --seqIDs {input.seqIDfile} --pep_dir {input.peptide_dir}, -o {output}
+        python rename_fasta.py --speciesIDs {input.speciesIDfile} --seqIDs {input.seqIDfile} --pep_dir {params.peptide_dir}, -o {output}
         """
-
 
 rule diamond_makedb:
     input: 
-        pep = lambda wildcards: os.path.join(pep_dir, speciesD[wildcards.s1])
-        #pep = "Species{s1}.fa",
+        #pep = lambda wildcards: os.path.join(ortho_dir, speciesD[wildcards.s1])
+        pep = os.path.join(ortho_dir, "Species{s1}.fa"),
     output: 
         os.path.join(ortho_dir, "diamondDBSpecies{s1}.dmnd")
     conda: 
@@ -70,7 +73,7 @@ rule diamond_makedb:
 rule diamond_blastx:
     input: 
         pep = os.path.join(ortho_dir,"Species{s1}.fa"),
-        db = os.path.join(ortho_dir,"diamondDBSpecies{s2}.dmnd")
+        db =  os.path.join(ortho_dir,"diamondDBSpecies{s2}.dmnd")
     output:
         os.path.join(ortho_dir,"Blast{s1}_{s2}.txt.gz")
     conda: 
