@@ -19,7 +19,6 @@ tybalt_params['sweep_values'] = tybalt_params['sweep_values'].str.split(',')
 tybalt_paramsD = tybalt_params.to_dict()
 
 
-
 rule all:
     input: 
         "figures/viz_results/z_parameter_final_loss_adage.png", "figures/viz_results/z_parameter_final_loss_tybalt.png"
@@ -44,6 +43,23 @@ rule preprocess_data:
         python process_expression_data.py {input} --mad --output_folder {params.outdir}
         """
 
+rule preprocess_data_scale:
+    input:
+        "data/{sample}.quant.tsv"
+    output:
+        train = "data/{sample}.train.processed.zeroone.tsv.gz",
+        test = "data/{sample}.test.processed.zeroone.tsv.gz",
+        mad = "data/{sample}.mad.processed.zeroone.tsv.gz"
+    params:
+        outdir = "data"
+    conda:
+        "environment.yml"
+    shell:
+        """
+        python process_expression_data.py {input} --mad --output_folder {params.outdir} --scale --scale_method "min_max"
+        """
+
+
 rule run_adage:
     input: 
         expand("data/{sample}.processed.tsv.gz", sample = ['haptophyta_orthogroup'])
@@ -52,15 +68,7 @@ rule run_adage:
     conda: 'environment.yml'
     shell:
        """
-       python adage.py  --input_data {input}
-                        --learning_rate {wildcards.learning_rate}
-                        --batch_size {wildcards.batch_size}
-                        --epochs {wildcards.epochs}
-                        --sparsity {wildcards.sparsity}
-                        --noise {wildcards.noise}
-                        --output_filename {output}
-                        --num_components {wildcards.num_components}
-                        --subset_mad_genes
+       python adage.py  --input_data {input} --learning_rate {wildcards.learning_rate} --batch_size {wildcards.batch_size} --epochs {wildcards.epochs} --sparsity {wildcards.sparsity} --noise {wildcards.noise} --output_filename {output} --num_components {wildcards.num_components} --subset_mad_genes 8000 --scale
         """
 
 rule summarize_paramsweep_adage:
@@ -82,14 +90,7 @@ rule run_tybalt:
     conda: 'environment.yml'
     shell:
        """
-       python vae.py    --input_data {input}
-                        --learning_rate {wildcards.learning_rate}
-                        --batch_size {wildcards.batch_size}
-                        --epochs {wildcards.epochs}
-                        --kappa {wildcards.kappa}
-                        --output_filename {output}
-                        --num_components {wildcards.num_components}
-                        --subset_mad_genes
+       python vae.py    --input_data {input} --learning_rate {wildcards.learning_rate} --batch_size {wildcards.batch_size} --epochs {wildcards.epochs} --kappa {wildcards.kappa} --output_filename {output} --num_components {wildcards.num_components} --subset_mad_genes 8000 --scale
         """
 
 rule summarize_paramsweep_tybalt:

@@ -37,6 +37,7 @@ import numpy as np
 import pandas as pd
 
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
 from keras.engine.topology import Layer
 from keras.layers import Input, Dense, Dropout, Activation
 from keras.models import Sequential, Model
@@ -71,8 +72,7 @@ class TiedWeightsDecoder(Layer):
         return (input_shape[0], self.output_dim)
 
 
-
-def run_adage(expression_file, learning_rate, batch_size, epochs, sparsity, noise, output_filename, latent_dim, optimizer, tied_weights, scale, subset_mad_genes=None):
+def run_adage(expression_file, learning_rate, batch_size, epochs, sparsity, noise, output_filename, latent_dim, use_optimizer, tied_weights, scale, subset_mad_genes=None, data_basename='data'):
 
     # Random seed
     seed = int(np.random.randint(low=0, high=10000, size=1))
@@ -81,28 +81,25 @@ def run_adage(expression_file, learning_rate, batch_size, epochs, sparsity, nois
     # Load Data
     #file = 'train_{}_expression_matrix_processed.tsv.gz'.format(dataset.lower())
     #rnaseq_file = os.path.join('..', '0.expression-download', 'data', file)
-    #rnaseq_df = pd.read_table(rnaseq_file, index_col=0)
-    rnaseq_df = pd.read_table(expression_file, index_col=0)
+    rnaseq_df = pd.read_table(expression_file, index_col=0).T
 
     # Determine most variably expressed genes and subset
     if subset_mad_genes is not None:
         mad_genes = rnaseq_df.mad(axis=0).sort_values(ascending=False)
-        top_mad_genes = mad_genes.iloc[0:subset_mad_genes, ].index
-        rnaseq_df = rnaseq_df.loc[:, top_mad_genes]
+        top_mad_genes = mad_genes.iloc[0:int(subset_mad_genes), ].index
+        rnaseq_df =rnaseq_df.loc[:, top_mad_genes] #rnaseq_df.loc[:, top_mad_genes]
 
     # Zero One normalize input data
     if scale:
         scaler = MinMaxScaler()
         x = scaler.fit_transform(rnaseq_df)
-        rnaseq_df = pd.DataFrame(x, index=rnaseq_df.index,
-                                 columns=rnaseq_df.columns)
+        rnaseq_df = pd.DataFrame(x, index=rnaseq_df.index, columns=rnaseq_df.columns)
 
     original_dim = rnaseq_df.shape[1]
 
     # Split 10% test set randomly
     test_set_percent = 0.1
-    rnaseq_test_df = rnaseq_df.sample(frac=test_set_percent)
-    rnaseq_train_df = rnaseq_df.drop(rnaseq_test_df.index)
+    rnaseq_train_df, rnaseq_test_df = train_test_split(rnaseq_df, test_size=test_set_percent, random_state =123) #shuffle=False
 
     if tied_weights:
         # Input place holder for RNAseq data with specific input size
@@ -153,7 +150,7 @@ def run_adage(expression_file, learning_rate, batch_size, epochs, sparsity, nois
                                    sparsity=sparsity,
                                    noise=noise,
                                    seed=seed,
-                                   dataset=dataset)
+                                   dataset=data_basename)
     history_df.to_csv(output_filename, sep='\t')
 
 if __name__ == '__main__':
@@ -181,6 +178,8 @@ if __name__ == '__main__':
     p.add_argument('-m', '--subset_mad_genes', default=8000,
                         help='The number of mad genes to subset')
     p.add_argument('--input_data', help='the dataset to use in the sweep')
+    p.add_argument('--data_basename', default = 'data',
+                        help='the name of the dataset')
     args = p.parse_args()
-    sys.exit(run_adage(args.input_data, float(args.learning_rate), int(args.batch_size), int(args.epochs), float(args.sparsity), float(args.noise), args.output_filename, int(args.num_components), args.optimizer, args.untied_weights, args.scale, args.subset_mad_genes))
+    sys.exit(run_adage(args.input_data, float(args.learning_rate), int(args.batch_size), int(args.epochs), float(args.sparsity), float(args.noise), args.output_filename, int(args.num_components), args.optimizer, args.untied_weights, args.scale, int(args.subset_mad_genes), args.data_basename))
 

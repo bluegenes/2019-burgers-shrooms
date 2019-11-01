@@ -34,6 +34,7 @@ import numpy as np
 import pandas as pd
 
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from keras.layers import Input, Dense, Lambda, Layer, Activation
 from keras.layers.normalization import BatchNormalization
@@ -43,25 +44,28 @@ from keras import metrics, optimizers
 from keras.callbacks import Callback
 
 
-def run_vae(rnaseq_file, learning_rate, batch_size, epochs, kappa, depth, first_layer, output_filename, latent_dim, scale, subset_mad_genes):
+def run_vae(rnaseq_file, learning_rate, batch_size, epochs, kappa, depth, first_layer, output_filename, latent_dim, scale, subset_mad_genes, data_basename):
+
+    # Random seed
+    seed = int(np.random.randint(low=0, high=10000, size=1))
+    np.random.seed(seed)
 
     # Load Data
     #file = 'train_{}_expression_matrix_processed.tsv.gz'.format(dataset.lower())
     #rnaseq_file = os.path.join('..', '0.expression-download', 'data', file)
-    rnaseq_df = pd.read_table(rnaseq_file, index_col=0)
+    rnaseq_df = pd.read_table(rnaseq_file, index_col=0).T
 
     # Determine most variably expressed genes and subset
     if subset_mad_genes is not None:
         mad_genes = rnaseq_df.mad(axis=0).sort_values(ascending=False)
-        top_mad_genes = mad_genes.iloc[0:subset_mad_genes, ].index
-        rnaseq_df = rnaseq_df.loc[:, top_mad_genes]
+        top_mad_genes = mad_genes.iloc[0:int(subset_mad_genes), ].index
+        rnaseq_df =rnaseq_df.loc[:, top_mad_genes] #rnaseq_df.loc[:, top_mad_genes]
 
     # Zero One normalize input data
     if scale:
         scaler = MinMaxScaler()
         x = scaler.fit_transform(rnaseq_df)
-        rnaseq_df = pd.DataFrame(x, index=rnaseq_df.index,
-                                 columns=rnaseq_df.columns)
+        rnaseq_df = pd.DataFrame(x, index=rnaseq_df.index, columns=rnaseq_df.columns)
 
     # Set architecture dimensions
     original_dim = rnaseq_df.shape[1]
@@ -132,8 +136,7 @@ def run_vae(rnaseq_file, learning_rate, batch_size, epochs, kappa, depth, first_
 
     # Split 10% test set randomly
     test_set_percent = 0.1
-    rnaseq_test_df = rnaseq_df.sample(frac=test_set_percent)
-    rnaseq_train_df = rnaseq_df.drop(rnaseq_test_df.index)
+    rnaseq_train_df, rnaseq_test_df = train_test_split(rnaseq_df, test_size=test_set_percent, random_state =123) #, shuffle=False
 
     # Input place holder for RNAseq data with specific input size
     rnaseq_input = Input(shape=(original_dim, ))
@@ -228,7 +231,7 @@ def run_vae(rnaseq_file, learning_rate, batch_size, epochs, kappa, depth, first_
                                    seed=seed,
                                    depth=depth,
                                    first_layer=first_layer,
-                                   dataset=dataset)
+                                   dataset=data_basename)
     history_df.to_csv(output_filename, sep='\t')
 
 
@@ -257,8 +260,7 @@ if __name__ == '__main__':
                         help='The number of mad genes to subset')
     p.add_argument('--input_data',
                         help='the dataset to use in the sweep')
-#parser.add_argument('-x', '--dataset', default='TCGA',
-#                    choices=['TCGA', 'TARGET', 'GTEX'],
-#                    help='the dataset to use in the sweep')
+    p.add_argument('--data_basename', default = 'data',
+                        help='the name of the dataset')
     args = p.parse_args()
-    sys.exit(run_vae(args.input_data, float(args.learning_rate), int(args.batch_size), int(args.epochs), float(args.kappa), int(args.depth),int(args.first_layer), args.output_filename, int(args.num_components), args.scale, args.subset_mad_genes))
+    sys.exit(run_vae(args.input_data, float(args.learning_rate), int(args.batch_size), int(args.epochs), float(args.kappa), int(args.depth),int(args.first_layer), args.output_filename, int(args.num_components), args.scale, args.subset_mad_genes, args.data_basename))
