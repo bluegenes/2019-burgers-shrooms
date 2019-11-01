@@ -11,12 +11,11 @@ adage_file <- file(snakemake@input[["adage"]])
 tybalt_file <- file(snakemake@input[["tybalt"]])
 dataset_name <- snakemake@params[["dataset_name"]]
 
-
 # Set output directories
 output_fig <- file.path("figures", "viz_results")
 
 # Load Data
-tybalt_data <- readParamSweep(tybalt_file, algorithm = 'tybalt')
+tybalt_data <- readParamSweep(tybalt_file, algorithm = 'Tybalt')
 
 tybalt_param_z_png <- file.path(output_fig, "z_parameter_final_loss_tybalt.png")
 tybalt_param_z_pdf <- file.path(output_fig, "z_parameter_final_loss_tybalt.pdf")
@@ -27,8 +26,7 @@ p
 ggsave(tybalt_param_z_png, plot = p, height = 3, width = 5.5)
 ggsave(tybalt_param_z_pdf, plot = p, height = 3, width = 5.5)
 
-tybalt_one_model <- tybalt_data$full_df %>%
-  dplyr::filter(learning_rate == "0.0005", batch_size == "50", epochs == 100)
+tybalt_one_model <- tybalt_data$full_df %>% dplyr::filter(learning_rate == "0.0005", batch_size == "50", epochs == 100)
 
 tybalt_one_model$num_components <-
   dplyr::recode_factor(tybalt_one_model$num_components, 
@@ -80,7 +78,7 @@ ggsave(tybalt_best_model_png, plot = p, height = 2.5, width = 4)
 ggsave(tybalt_best_model_pdf, plot = p, height = 2.5, width = 4)
 
 # Load Data
-adage_data <- readParamSweep(adage_file, algorithm = 'adage')
+adage_data <- readParamSweep(adage_file, algorithm = "ADAGE")
 
 # Specify that the model has tied weights
 adage_param_z_png <- file.path(output_fig, "z_parameter_final_loss_adage.png")

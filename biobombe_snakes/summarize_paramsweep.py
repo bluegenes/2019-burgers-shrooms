@@ -34,5 +34,5 @@ df_list = [pd.read_table(os.path.join(results_dir, x)) for x in param_files]
 param_df = pd.concat(df_list, axis=0)
 param_df.rename(columns={'Unnamed: 0': 'train_epoch'}, inplace=True)
 
-full_result_file = os.path.join('results', output_filename)
+full_result_file = os.path.join(output_filename)
 param_df.to_csv(full_result_file, index=False, sep='\t')

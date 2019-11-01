@@ -8,20 +8,23 @@ import pandas as pd
 from biobombe_snakemake_utils import read_params
 
 
-#adage_params = read_params("config/initial_z_parameter_sweep_adage_MMETSP.tsv")
-adage_params = read_params("config/initial_z_parameter_sweep_adage_MMETSP_test.tsv")
+adage_params = read_params("config/initial_z_parameter_sweep_adage_MMETSP.tsv")
+#adage_params = read_params("config/initial_z_parameter_sweep_adage_MMETSP_test.tsv")
 adage_params['sweep_values'] = adage_params['sweep_values'].str.split(',')
 adage_paramsD = adage_params.to_dict()
 
-#tybalt_params = read_params("config/initial_z_parameter_sweep_tybalt_MMETSP.tsv")
-tybalt_params = read_params("config/initial_z_parameter_sweep_tybalt_MMETSP_test.tsv")
+tybalt_params = read_params("config/initial_z_parameter_sweep_tybalt_MMETSP.tsv")
+#tybalt_params = read_params("config/initial_z_parameter_sweep_tybalt_MMETSP_test.tsv")
 tybalt_params['sweep_values'] = tybalt_params['sweep_values'].str.split(',')
 tybalt_paramsD = tybalt_params.to_dict()
 
 
 rule all:
     input: 
-        "figures/viz_results/z_parameter_final_loss_adage.png", "figures/viz_results/z_parameter_final_loss_tybalt.png"
+        "figures/viz_results/z_parameter_final_loss_adage.png", "figures/viz_results/z_parameter_final_loss_tybalt.png",
+        expand("results/tybalt/{sample}_lr{learning_rate}_bs{batch_size}_e{epochs}_k{kappa}_numc{num_components}.tsv", sample= "haptophyta_orthogroup", learning_rate =                   tybalt_paramsD['sweep_values']['learning_rate'], batch_size = tybalt_paramsD['sweep_values']['batch_size'], epochs = tybalt_paramsD['sweep_values']['epochs'], kappa =                   tybalt_paramsD['sweep_values']['kappa'], num_components =
+        tybalt_paramsD['sweep_values']['num_components']), 
+        expand("results/adage/{sample}_lr{learning_rate}_bs{batch_size}_e{epochs}_sp{sparsity}_ns{noise}_numc{num_components}.tsv", sample= "haptophyta_orthogroup", learning_rate         =        adage_paramsD['sweep_values']['learning_rate'], batch_size = adage_paramsD['sweep_values']['batch_size'], epochs = adage_paramsD['sweep_values']['epochs'], sparsity =                             adage_paramsD['sweep_values']['sparsity'],   noise = adage_paramsD['sweep_values']['noise'], num_components = adage_paramsD['sweep_values']['num_components']),
         
         # use this for specific param compbas version
         #"figures/viz_results/{sample}_z_parameter_final_loss_dae.png", "figures/viz_results/{sample}_z_parameter_final_loss_vae.png"
@@ -79,7 +82,7 @@ rule summarize_paramsweep_adage:
         results_dir = directory("results/adage")
     shell:
         """ 
-        python biobombe_scripts/summarize_paramsweep.py -r {params.results_dir} -f {output}
+        python summarize_paramsweep.py -r {params.results_dir} -f {output}
         """
 
 rule run_tybalt:
@@ -101,7 +104,7 @@ rule summarize_paramsweep_tybalt:
     output: "results/tybalt/paramsweep_summary.txt"
     shell:
         """ 
-        python biobombe_scripts/summarize_paramsweep.py -r {params.results_dir} -f {output}
+        python summarize_paramsweep.py -r {params.results_dir} -f {output}
         """
 
 
@@ -114,8 +117,10 @@ rule visualize_paramsweep:
     output: 
         "figures/viz_results/z_parameter_final_loss_adage.png",
         "figures/viz_results/z_parameter_final_loss_tybalt.png"
+    conda:
+        "environment.yml"
     script:
-        "visualize-parameter-sweep.r"
+        "visualize-parameter-sweep.R"
 
 
 ### code below can be used to run individual dae/vae with specified parameter combos
