@@ -71,7 +71,7 @@ tybalt_good_training_df$num_components <- num_com
 tybalt_best_model_png <- file.path(output_fig, "z_parameter_best_model_tybalt.png")
 tybalt_best_model_pdf <- file.path(output_fig, "z_parameter_best_model_tybalt.pdf")
 
-p <- plotBestModel(tybalt_good_training_df, algorithm = 'Tybalt', dataset = dataset_name)
+p <- plotBestModel(tybalt_good_training_df, algorithm = 'Tybalt', dataset = dataset_name, output_fig_dir=output_fig)
 p
 
 ggsave(tybalt_best_model_png, plot = p, height = 2.5, width = 4)
