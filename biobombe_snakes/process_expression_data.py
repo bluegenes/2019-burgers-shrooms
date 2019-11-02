@@ -64,10 +64,10 @@ def preprocess_data(countfile, out_file=None, scale = False, scale_method = "min
         elif scale_method == 'zscore':
             expr_scaled = preprocessing.scale(expr_data.T, axis=0)
             file_suffix = '.processed.zscore.tsv.gz'
-        
-        expr_norm = pd.DataFrame(expr_scaled, index=expr_data.columns, columns=expr_data.index).T  # transform back
+
+        expr_norm = pd.DataFrame(expr_scaled, index=expr_data.columns, columns=expr_data.index) #.T  # transform back
     else:
-        expr_norm = expr_data
+        expr_norm = expr_data.T # transform
         file_suffix = '.processed.tsv.gz'
 
     # check that output folder exists, make it if not
@@ -95,7 +95,7 @@ def preprocess_data(countfile, out_file=None, scale = False, scale_method = "min
 
     # write test set to file
     test_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.test' + file_suffix )
-    testDF.to_csv(test_file, sep='\t', compression='gzip', float_format='%.3g')
+    testDF.to_csv(test_file, sep='\t',  header=True, index=True, compression='gzip', float_format='%.3g')
 
     ###########################################
     # Sort on Median Absolute Deviation "mad" #
@@ -104,24 +104,23 @@ def preprocess_data(countfile, out_file=None, scale = False, scale_method = "min
     if mad:
 
         mad_file = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.mad' + file_suffix) #+ str(num_mad_genes) + '.tsv.gz')
-        # sort
-        #mad_genes_df = pd.DataFrame(expr_norm.mad(axis=1).sort_values(ascending=False)).reset_index()
-        mad_genes_df = pd.DataFrame(expr_norm.mad(axis=1).sort_values(ascending=False)).reset_index()
-        mad_genes_df.columns = ['gene_id', 'median_absolute_deviation']
-        # write
-        mad_genes_df.to_csv(mad_file, sep='\t', index=False, compression='gzip', float_format='%.3g')
+        mad_train = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.mad.train90' + file_suffix) #+ str(num_mad_genes) + '.tsv.gz')
+        mad_test = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.mad.test10' + file_suffix) #+ str(num_mad_genes) + '.tsv.gz')
 
-        # same but for training set only
-        mad_train = os.path.join(out_folder, os.path.basename(countfile).rsplit('.')[0] + '.train.mad' + str(num_mad_genes) + file_suffix) #+ str(num_mad_genes) + '.tsv.gz')
-        mad_train_genes_df = pd.DataFrame(trainDF.mad(axis=0).sort_values(ascending=False)).reset_index()
-        mad_train_genes_df.columns = ['gene_id', 'median_absolute_deviation']
-        mad_train_genes_df.to_csv(mad_train, sep='\t', index=False, compression='gzip', float_format='%.3g')
-        #subset to only top genes
-        #top_mad_genes = mad_genes_df.iloc[0:num_mad_genes, ].index
-        # subset original dataset
-        #expr_subset_df = expr_norm.loc[:, top_mad_genes]
-        # Write to file
-        #expr_subset.to_csv(mad_file, sep='\t', index=False)
+        mad_genes = expr_norm.mad(axis=0).sort_values(ascending=False)
+        top_mad_genes = mad_genes.iloc[0:int(num_mad_genes), ].index
+        mad_genes_df =expr_norm.loc[:, top_mad_genes] ##rnaseq_df.loc[:, top_mad_genes]
+        #mad_genes_df.columns = ['gene_id', 'median_absolute_deviation']
+        # write
+        #mad_genes_df.to_csv(mad_file, sep='\t', index=False, compression='gzip', float_format='%.3g')
+
+        # write full df
+        mad_genes_df.to_csv(mad_file, sep='\t', header=True, index=True, compression='gzip', float_format='%.3g')
+
+        #split mad --> test, training
+        madtrainDF, madtestDF = train_test_split(mad_genes_df, test_size=percTest, random_state =42) #, shuffle=False
+        madtrainDF.to_csv(mad_train, sep='\t', header=True, index=True, compression='gzip', float_format='%.3g')
+        madtestDF.to_csv(mad_test, sep='\t',  header=True, index=True,compression='gzip', float_format='%.3g')
 
 
 if __name__ == '__main__':
@@ -136,5 +135,6 @@ if __name__ == '__main__':
     p.add_argument("--output_folder", default="")
     p.add_argument("--output_filename", default=None)
     p.add_argument("--num_mad_genes", help="number of highest median absolute deviation genes to output", type=int, default=8000)
+    p.add_argument("--transform", help="transform dataset prior to processing", action="store_true")
     args = p.parse_args()
     sys.exit(preprocess_data(args.countfile, args.output_filename, args.scale, args.scale_method, args.percTest, args.mad, args.num_mad_genes, args.output_folder))

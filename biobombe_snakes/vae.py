@@ -53,7 +53,7 @@ def run_vae(rnaseq_file, learning_rate, batch_size, epochs, kappa, depth, first_
     # Load Data
     #file = 'train_{}_expression_matrix_processed.tsv.gz'.format(dataset.lower())
     #rnaseq_file = os.path.join('..', '0.expression-download', 'data', file)
-    rnaseq_df = pd.read_table(rnaseq_file, index_col=0).T
+    rnaseq_df = pd.read_table(rnaseq_file, index_col=0)
 
     # Determine most variably expressed genes and subset
     if subset_mad_genes is not None:

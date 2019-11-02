@@ -19,14 +19,14 @@ zsweep_paramsD = zsweep_params.to_dict()
 
 SAMPLE = 'haptophyta_orthogroup'
 ZDIMS = zsweep_paramsD.keys()
-EXTS = ["tybalt_training_hist.tsv","adage_training_hist.tsv", "gene_corr.tsv.gz", "sample_corr.tsv.gz", "reconstruction.tsv"]
+EXTS = ["tybalt_training_hist.tsv","adage_training_hist.tsv", "sample_corr.tsv.gz", "reconstruction.tsv"] #"gene_corr.tsv.gz"
 
 rule all:
     input: 
          expand("model_results/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS),
-         expand("model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_shuffled_components_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS),
+         expand("model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS),
          expand("model_results_mad/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS),
-         expand("model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_shuffled_components_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS)
+         expand("model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS)
 
 
 rule preprocess_data:
@@ -42,6 +42,7 @@ rule preprocess_data:
         "environment.yml"
     shell:
         """
+        export KERAS_BACKEND=tensorflow
         python process_expression_data.py {input} --mad --output_folder {params.outdir}
         """
 
@@ -58,6 +59,7 @@ rule preprocess_data_scale:
         "environment.yml"
     shell:
         """
+        export KERAS_BACKEND=tensorflow
         python process_expression_data.py {input} --mad --output_folder {params.outdir} --scale --scale_method "min_max"
         """
 
@@ -65,11 +67,12 @@ rule train_models:
     input: 
         train = "data/{sample}.train.processed.tsv.gz",
         test = "data/{sample}.test.processed.tsv.gz",
-        mad = "data/{sample}.mad.processed.tsv.gz"
+        mad_train = "data/{sample}.mad.train90.processed.tsv.gz",
+        mad_test = "data/{sample}.mad.test10.processed.tsv.gz"
     output: 
         "model_results/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_tybalt_training_hist.tsv",
         "model_results/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_adage_training_hist.tsv",
-        "model_results/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_gene_corr.tsv.gz",
+        #"model_results/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_gene_corr.tsv.gz",
         "model_results/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_sample_corr.tsv.gz",
         "model_results/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_reconstruction.tsv",
         directory("model_results/ensemble_z_matrices/{sample}_components_{zdim}")
@@ -80,20 +83,23 @@ rule train_models:
         'environment.yml'
     shell:
         """
-        python train_models_single_zdim.py   {input.train} {input.test} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir}
+        export KERAS_BACKEND=tensorflow
+        python train_models_single_zdim.py  {input.train} {input.test} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir}
         """
 
 rule train_models_shuffle:
     input:
         train = "data/{sample}.train.processed.tsv.gz",
         test = "data/{sample}.test.processed.tsv.gz",
-        mad = "data/{sample}.mad.processed.tsv.gz"
+        mad = "data/{sample}.mad.processed.tsv.gz",
+        mad_train = "data/{sample}.mad.train90.processed.tsv.gz",
+        mad_test = "data/{sample}.mad.test10.processed.tsv.gz"
     output:
-        "model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_shuffled_components_tybalt_training_hist.tsv",
-        "model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_shuffled_components_adage_training_hist.tsv",
-        "model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_shuffled_components_gene_corr.tsv.gz",
-        "model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_shuffled_components_sample_corr.tsv.gz",
-        "model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_shuffled_components_reconstruction.tsv",
+        "model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_tybalt_training_hist.tsv",
+        "model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_adage_training_hist.tsv",
+        #"model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_gene_corr.tsv.gz",
+        "model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_sample_corr.tsv.gz",
+        "model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_reconstruction.tsv",
         directory("model_results/ensemble_z_matrices/{sample}_components_{zdim}")
     params:
         out_dir = "model_results",
@@ -102,6 +108,7 @@ rule train_models_shuffle:
         'environment.yml'
     shell:
         """
+        export KERAS_BACKEND=tensorflow
         python train_models_single_zdim.py   {input.train} {input.test} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir} --shuffle
         """
 
@@ -109,11 +116,13 @@ rule train_models_mad:
     input:
         train = "data/{sample}.train.processed.tsv.gz",
         test = "data/{sample}.test.processed.tsv.gz",
-        mad = "data/{sample}.mad.processed.tsv.gz"
+        mad = "data/{sample}.mad.processed.tsv.gz",
+        mad_train = "data/{sample}.mad.train90.processed.tsv.gz",
+        mad_test = "data/{sample}.mad.test10.processed.tsv.gz"
     output:
         "model_results_mad/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_tybalt_training_hist.tsv",
         "model_results_mad/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_adage_training_hist.tsv",
-        "model_results_mad/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_gene_corr.tsv.gz",
+        #"model_results_mad/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_gene_corr.tsv.gz",
         "model_results_mad/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_sample_corr.tsv.gz",
         "model_results_mad/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_reconstruction.tsv",
         directory("model_results_mad/ensemble_z_matrices/{sample}_components_{zdim}")
@@ -124,20 +133,23 @@ rule train_models_mad:
         'environment.yml'
     shell:
         """
-        python train_models_single_zdim.py   {input.train} {input.test} --input_mad {input.mad} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir}
+        export KERAS_BACKEND=tensorflow
+        python train_models_single_zdim.py   {input.train} {input.test} --mad_train {input.mad_train} --mad_test {input.mad_test} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir}
         """
 
 rule train_models_shuffle_mad:
     input:
         train = "data/{sample}.train.processed.tsv.gz",
         test = "data/{sample}.test.processed.tsv.gz",
-        mad = "data/{sample}.mad.processed.tsv.gz"
+        mad = "data/{sample}.mad.processed.tsv.gz",
+        mad_train = "data/{sample}.mad.train90.processed.tsv.gz",
+        mad_test = "data/{sample}.mad.test10.processed.tsv.gz"
     output:
-        "model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_shuffled_components_tybalt_training_hist.tsv",
-        "model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_shuffled_components_adage_training_hist.tsv",
-        "model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_shuffled_components_gene_corr.tsv.gz",
-        "model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_shuffled_components_sample_corr.tsv.gz",
-        "model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_shuffled_components_reconstruction.tsv",
+        "model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_tybalt_training_hist.tsv",
+        "model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_adage_training_hist.tsv",
+        #"model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_gene_corr.tsv.gz",
+        "model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_sample_corr.tsv.gz",
+        "model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_reconstruction.tsv",
         directory("model_results_mad/ensemble_z_matrices/{sample}_components_{zdim}")
     params:
         out_dir = "model_results_mad",
@@ -146,7 +158,8 @@ rule train_models_shuffle_mad:
         'environment.yml'
     shell:
         """
-        python train_models_single_zdim.py   {input.train} {input.test} --input_mad {input.mad} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir} --shuffle
+        export KERAS_BACKEND=tensorflow
+        python train_models_single_zdim.py   {input.train} {input.test} --mad_train {input.mad_train} --mad_test {input.mad_test} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir} --shuffle
         """
 
 

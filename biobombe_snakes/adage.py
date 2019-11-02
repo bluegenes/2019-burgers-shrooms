@@ -81,7 +81,7 @@ def run_adage(expression_file, learning_rate, batch_size, epochs, sparsity, nois
     # Load Data
     #file = 'train_{}_expression_matrix_processed.tsv.gz'.format(dataset.lower())
     #rnaseq_file = os.path.join('..', '0.expression-download', 'data', file)
-    rnaseq_df = pd.read_table(expression_file, index_col=0).T
+    rnaseq_df = pd.read_table(expression_file, index_col=0)
 
     # Determine most variably expressed genes and subset
     if subset_mad_genes is not None:

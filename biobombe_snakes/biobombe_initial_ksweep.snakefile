@@ -77,6 +77,7 @@ rule run_adage:
     conda: 'environment.yml'
     shell:
        """
+        export KERAS_BACKEND=tensorflow
        python adage.py  --input_data {input} --learning_rate {wildcards.learning_rate} --batch_size {wildcards.batch_size} --epochs {wildcards.epochs} --sparsity {wildcards.sparsity} --noise {wildcards.noise} --output_filename {output} --num_components {wildcards.num_components} --subset_mad_genes 8000 --scale
         """
 
@@ -99,6 +100,7 @@ rule run_tybalt:
     conda: 'environment.yml'
     shell:
        """
+        export KERAS_BACKEND=tensorflow
        python vae.py    --input_data {input} --learning_rate {wildcards.learning_rate} --batch_size {wildcards.batch_size} --epochs {wildcards.epochs} --kappa {wildcards.kappa} --output_filename {output} --num_components {wildcards.num_components} --subset_mad_genes 8000 --scale
         """
 

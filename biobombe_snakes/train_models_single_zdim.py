@@ -106,7 +106,7 @@ def compile_corr_df(pearson_list, spearman_list, algorithm_list, column_names,
     corr_df = corr_df.assign(data=data_type)
     return corr_df
 
-def train_models(basename, input_train, input_test, zdim, paramsD, out_dir, num_seeds, shuffle, madfile, num_mad_genes):
+def train_models(basename, input_train, input_test, zdim, paramsD, out_dir, num_seeds, shuffle, mad_train, mad_test, num_mad_genes):
 
     # Set output directory and file names
     train_dir = os.path.join(out_dir, 'ensemble_z_results', f'{zdim}_components')
@@ -131,33 +131,37 @@ def train_models(basename, input_train, input_test, zdim, paramsD, out_dir, num_
 
     # Load Preprocessed Data --> could provide option to input raw data and just call process data from here,
     # but don't want to process multiple times, esp since we're running this independently on each zdim
-    rnaseq_train_df = read_counts_or_params(input_train)
-    rnaseq_test_df = read_counts_or_params(input_test)
-
+    rnaseq_train_df = pd.read_table(input_train, index_col=0).T
+    rnaseq_test_df = pd.read_table(input_test, index_col=0).T
     # Determine most variably expressed genes and subset
-    if madfile is not None:
-        mad_genes_df = read_counts_or_params(madfile)
-
+    if mad_train is not None and mad_test is not None:
+     #   if mad_test is None: # need to check this!
+        rnaseq_train_df = pd.read_table(mad_train, index_col=0).T
+        rnaseq_test_df = pd.read_table(mad_test, index_col=0).T
         #data_base = os.path.join('..', '0.expression-download', 'data')
         #mad_file = os.path.join(data_base, '{}_mad_genes.tsv'.format(dataset))
-
         #mad_genes_df = pd.read_table(mad_file)
-        mad_genes = mad_genes_df.iloc[0:num_mad_genes, ].index.astype(str)
-        rnaseq_train_df = rnaseq_train_df.reindex(mad_genes, axis='columns')
-        rnaseq_test_df = rnaseq_test_df.reindex(mad_genes, axis='columns')
+        #mad_genes_df = read_counts_or_params(madfile)
+        #mad_genes = mad_genes_df.iloc[:,0:num_mad_genes].index.astype(str)
+        # the following does not work, bc the "full" rnaseq train and test df's will not both contain all MAD genes
+        #rnaseq_train_df = rnaseq_train_df.reindex(mad_genes, axis='columns')
+        #rnaseq_test_df = rnaseq_test_df.reindex(mad_genes, axis='columns')
 
 
-# Initialize DataModel class 
+    # ntp: add a transform (consequence of how I'm preprocessing the data in process_expression_data.py)
+    rnaseq_train_df = rnaseq_train_df.T
+    rnaseq_test_df = rnaseq_test_df.T
 
+    # Initialize DataModel class
     dm = DataModel(df=rnaseq_train_df, test_df=rnaseq_test_df)
     dm.transform(how='zeroone') # data normalization happens here, don't need to feed in normalized data
-# Set seed and list of algorithms for compression
+    # Set seed and list of algorithms for compression
     np.random.seed(1234)
     random_seeds = np.random.randint(0, high=1000000, size=num_seeds)
 
     algorithms = ['pca', 'ica', 'nmf', 'dae', 'vae']
 
-# Save population of models in specific folder
+    # Save population of models in specific folder
     comp_out_dir = os.path.join(out_dir, 'ensemble_z_matrices',
                                 f'{basename}_components_{zdim}')
     if not os.path.exists(comp_out_dir):
@@ -335,7 +339,8 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('input_train', help="input train data tsv")
     p.add_argument('input_test', help="input test data tsv")
-    p.add_argument('--input_mad', help='filename containing genes sorted by median absolute deviation', default=None)
+    p.add_argument('--mad_train', help='train data containing genes sorted by median absolute deviation', default=None)
+    p.add_argument('--mad_test', help='test date containing genes sorted by median absolute deviation', default=None)
     p.add_argument('--basename', help= "basename to use in file names")
     p.add_argument('-z', '--zdim', help='dimensionality of z. prev called num_components')
     p.add_argument('-p', '--paramsfile',
@@ -362,6 +367,6 @@ if __name__ == '__main__':
     # start by just allowing a single zdim? Call once for each zdim.
     paramsD = zsweep_paramsD[zdim] #subset to just this z dimension
 
-    sys.exit(train_models(args.basename, args.input_train, args.input_test, int(zdim), paramsD, args.outdir, int(args.num_seeds), args.shuffle, args.input_mad, int(args.num_mad_genes)))
+    sys.exit(train_models(args.basename, args.input_train, args.input_test, int(zdim), paramsD, args.outdir, int(args.num_seeds), args.shuffle, args.mad_train, args.mad_test, int(args.num_mad_genes)))
 
 
