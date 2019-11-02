@@ -14,12 +14,13 @@ from snakemake.remote.HTTP import RemoteProvider as HTTPRemoteProvider
 FTP = FTPRemoteProvider()
 HTTP = HTTPRemoteProvider()
 
-#BASE_DIR = "/Users/tessa/Dropbox/dib-lab/2019-burgers-shrooms/"
-BASE_DIR = "/pylon5/mc5phkp/ntpierce/"
+BASE_DIR = "/Users/tessa/Dropbox/dib-lab/2019-burgers-shrooms/"
+#BASE_DIR = "/pylon5/mc5phkp/ntpierce/"
 
-MMETSP_INFO_DIR = os.path.join(BASE_DIR, "2019-burgers-shrooms", "mmetsp_info")
-#ORTHO_DIR = os.path.join(BASE_DIR, "Orthogroups_Haptophyta/Results_june_2019/Orthogroup_Sequences")
-ORTHO_DIR = os.path.join(BASE_DIR, "haptophyta_orthofinder_results/Results_june_2019/Orthogroup_Sequences")
+MMETSP_INFO_DIR = os.path.join(BASE_DIR, "mmetsp_info")
+#MMETSP_INFO_DIR = os.path.join(BASE_DIR, "2019-burgers-shrooms", "mmetsp_info")
+ORTHO_DIR = os.path.join(BASE_DIR, "Orthogroups_Haptophyta/Results_june_2019/Orthogroup_Sequences")
+#ORTHO_DIR = os.path.join(BASE_DIR, "haptophyta_orthofinder_results/Results_june_2019/Orthogroup_Sequences")
 KOFAM_DIR = os.path.join(BASE_DIR,"haptophyta_kofam")
 
 
@@ -93,28 +94,28 @@ rule download_kofamscan_program:
 
 # config.yml needs to be in same dir as the kofamscan executable
 # https://github.com/takaram/kofam_scan
-rule print_config:
-    input: 
-        profile_path = os.path.join(KOFAM_DIR,"profiles"),
-        ko_list = os.path.join(KOFAM_DIR, "ko_list") 
-    output: os.path.join(KOFAM_DIR,"kofamscan-1.1.0", "config.yml")
-    log: os.path.join(KOFAM_DIR,"logs/print_config.txt")
-    threads: 8
-    shell:
-        """
-        echo "# Path to your KO-HMM database" >> {output}
-        echo "profile: {input.profile_path}" >> {output}
-        echo "# Path to the KO list file" >> {output}
-        echo "ko_list: {input.ko_list}" >> {output}
-        echo "# Number of hmmsearch processes to be run parallelly" >> {output}
-        echo "cpu: {threads}" >> {output}
-        """
+#rule print_config:
+#    input: 
+#        profile_path = os.path.join(KOFAM_DIR,"profiles"),
+#        ko_list = os.path.join(KOFAM_DIR, "ko_list") 
+#    output: os.path.join(KOFAM_DIR,"kofamscan-1.1.0", "config.yml")
+#    log: os.path.join(KOFAM_DIR,"logs/print_config.txt")
+#    threads: 8
+#    shell:
+#        """
+#        echo "# Path to your KO-HMM database" >> {output}
+#        echo "profile: {input.profile_path}" >> {output}
+#        echo "# Path to the KO list file" >> {output}
+#        echo "ko_list: {input.ko_list}" >> {output}
+#        echo "# Number of hmmsearch processes to be run parallelly" >> {output}
+#        echo "cpu: {threads}" >> {output}
+#        """
 
 rule run_kofamscan:
     input:
         fasta = os.path.join(ORTHO_DIR, "{ortholog}.fa"),
         executable = os.path.join(KOFAM_DIR, "kofamscan-1.1.0/exec_annotation"),
-        config = os.path.join(KOFAM_DIR, "kofamscan-1.1.0", "config.yml"), # don't actually need this anymore, bc just calling params in executable command
+#        config = os.path.join(KOFAM_DIR, "kofamscan-1.1.0", "config.yml"), # don't actually need this anymore, bc just calling params in executable command
         profile_dir = os.path.join(KOFAM_DIR,"profiles"),
         ko_list = os.path.join(KOFAM_DIR, "ko_list") 
     output:
