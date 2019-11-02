@@ -1,0 +1,12 @@
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - conda-forge::ruby
+  - parallel
+  - hmmer=3.2.1
+ # - python>=3.6
+ # - screed
+ # - cd-hit=4.8.1
+ # - r-base>3.4
