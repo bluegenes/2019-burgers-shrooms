@@ -32,7 +32,7 @@ with open(ortholog_quantfile, 'r') as f:
 
 rule all:
     input: 
-        expand(os.path.join(ORTHO_DIR, "kofamscan_results", "{ortholog}.txt"), ortholog = ORTHOLOG_NAMES)
+        expand(os.path.join(KOFAM_DIR, "kofamscan_results", "{ortholog}.txt"), ortholog = ORTHOLOG_NAMES)
 
 ##rule download_quantfile:
 #    input: HTTP.remote("https://osf.io/ek9nu/download")
@@ -118,10 +118,11 @@ rule run_kofamscan:
         profile_dir = os.path.join(KOFAM_DIR,"profiles"),
         ko_list = os.path.join(KOFAM_DIR, "ko_list") 
     output:
-        os.path.join(ORTHO_DIR, "kofamscan_results/{ortholog}.txt")
+        #os.path.join(ORTHO_DIR, "kofamscan_results/{ortholog}.txt")
+        os.path.join(KOFAM_DIR, "kofamscan_results/{ortholog}.txt")
     log:
         os.path.join(KOFAM_DIR, "logs/kofamscan_results_{ortholog}.log")
-    threads: 8
+    threads: 28
     conda:
         "kofamscan-env.yml"
     shell:
