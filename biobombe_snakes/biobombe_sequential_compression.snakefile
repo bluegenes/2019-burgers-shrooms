@@ -26,7 +26,8 @@ rule all:
          expand("model_results/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS),
          expand("model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS),
          expand("model_results_mad/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS),
-         expand("model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS)
+         expand("model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS),
+         #"model_results/reconstruction_cost_{sample}.tsv", "model_results_mad/reconstruction_cost_{sample}.tsv",
 
 
 rule preprocess_data:
@@ -165,6 +166,8 @@ rule train_models_shuffle_mad:
 
 rule reconstruct_results:
     input:
+         expand("model_results/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS),
+         expand("model_results/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS),
     output:
         recon_cost = "model_results/reconstruction_cost_{sample}.tsv",
         recon_cost_fig = "model_results/figures/reconstruction_cost_{sample}.tsv",
@@ -182,6 +185,8 @@ rule reconstruct_results:
 
 rule reconstruct_results_mad:
     input:
+         expand("model_results_mad/ensemble_z_results/{zdim}_components/{sample}_{zdim}_components_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS),
+         expand("model_results_mad/ensemble_z_results/{zdim}_components_shuffled/{sample}_{zdim}_components_shuffled_{ext}", sample=SAMPLE, zdim=ZDIMS, ext=EXTS)
     output:
         recon_cost = "model_results_mad/reconstruction_cost_{sample}.tsv",
         recon_cost_fig = "model_results_mad/figures/reconstruction_cost_{sample}.tsv",
