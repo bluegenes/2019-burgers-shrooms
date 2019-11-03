@@ -1,13 +1,8 @@
 # slurm_cluster.yml - cluster configuration for elvers
 __default__:
-    account: ntpierce
     partition: RM-shared
     time: 3:00:00
     nodes: 1
     ntasks-per-node: 8 #Request n cores be allocated per node.
     chdir: "/pylon5/mc5phkp/ntpierce"
     output: "/pylon5/mc5phkp/ntpierce/preprocess-haptophyta%j.o"
-#    mem: 20G
-    
-## LOCATION
- #/pylon5/mc5phkp/ntpierce
