@@ -1,8 +1,14 @@
 # slurm_cluster.yml - cluster configuration for elvers
 __default__:
-    partition: RM-shared
-    time: 3:00:00
-    nodes: 1
-    ntasks-per-node: 8 #Request n cores be allocated per node.
-    chdir: "/pylon5/mc5phkp/ntpierce"
-    output: "/pylon5/mc5phkp/ntpierce/preprocess-haptophyta%j.o"
+    account: mc5phkp
+    partition: RM-small
+    time: 01:00:00
+    nodes: 2
+    ntasks-per-node: 28 #Request n cores be allocated per node.    
+    cpus-per-task: 14
+    chdir: /pylon5/mc5phkp/ntpierce
+    output: /pylon5/mc5phkp/ntpierce/mmetsp_out/logs/preprocess-%j.out
+    error: /pylon5/mc5phkp/ntpierce/mmetsp_out/logs/preprocess-%j.err
+
+#    mem: 20G
+# cpus-per-task: 14
