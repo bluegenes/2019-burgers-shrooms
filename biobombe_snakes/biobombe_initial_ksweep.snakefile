@@ -5,7 +5,7 @@ Run: snakemake -s  biobombe_initial_ksweep.snakefile --use-conda -n
 
 import os
 import pandas as pd
-from biobombe_snakemake_utils import read_params
+from scripts.biobombe_snakemake_utils import read_params
 from snakemake.remote.HTTP import RemoteProvider as HTTPRemoteProvider
 HTTP = HTTPRemoteProvider()
 
@@ -49,7 +49,7 @@ rule preprocess_data:
         "environment.yml"
     shell:
         """
-        python process_expression_data.py {input} --mad --output_folder {params.outdir}
+        python scripts/process_expression_data.py {input} --mad --output_folder {params.outdir}
         """
 
 rule preprocess_data_scale:
@@ -65,7 +65,7 @@ rule preprocess_data_scale:
         "environment.yml"
     shell:
         """
-        python process_expression_data.py {input} --mad --output_folder {params.outdir} --scale --scale_method "min_max"
+        python scripts/process_expression_data.py {input} --mad --output_folder {params.outdir} --scale --scale_method "min_max"
         """
 
 
@@ -78,7 +78,7 @@ rule run_adage:
     shell:
        """
         export KERAS_BACKEND=tensorflow
-       python adage.py  --input_data {input} --learning_rate {wildcards.learning_rate} --batch_size {wildcards.batch_size} --epochs {wildcards.epochs} --sparsity {wildcards.sparsity} --noise {wildcards.noise} --output_filename {output} --num_components {wildcards.num_components} --subset_mad_genes 8000 --scale
+       python scripts/adage.py  --input_data {input} --learning_rate {wildcards.learning_rate} --batch_size {wildcards.batch_size} --epochs {wildcards.epochs} --sparsity {wildcards.sparsity} --noise {wildcards.noise} --output_filename {output} --num_components {wildcards.num_components} --subset_mad_genes 8000 --scale
         """
 
 rule summarize_paramsweep_adage:
@@ -89,7 +89,7 @@ rule summarize_paramsweep_adage:
         results_dir = directory("results/adage")
     shell:
         """ 
-        python summarize_paramsweep.py -r {params.results_dir} -f {output}
+        python scripts/summarize_paramsweep.py -r {params.results_dir} -f {output}
         """
 
 rule run_tybalt:
@@ -101,7 +101,7 @@ rule run_tybalt:
     shell:
        """
         export KERAS_BACKEND=tensorflow
-       python vae.py    --input_data {input} --learning_rate {wildcards.learning_rate} --batch_size {wildcards.batch_size} --epochs {wildcards.epochs} --kappa {wildcards.kappa} --output_filename {output} --num_components {wildcards.num_components} --subset_mad_genes 8000 --scale
+       python scripts/vae.py    --input_data {input} --learning_rate {wildcards.learning_rate} --batch_size {wildcards.batch_size} --epochs {wildcards.epochs} --kappa {wildcards.kappa} --output_filename {output} --num_components {wildcards.num_components} --subset_mad_genes 8000 --scale
         """
 
 rule summarize_paramsweep_tybalt:
@@ -112,7 +112,7 @@ rule summarize_paramsweep_tybalt:
     output: "results/tybalt/paramsweep_summary.txt"
     shell:
         """ 
-        python summarize_paramsweep.py -r {params.results_dir} -f {output}
+        python scripts/summarize_paramsweep.py -r {params.results_dir} -f {output}
         """
 
 
@@ -128,7 +128,7 @@ rule visualize_paramsweep:
     conda:
         "environment.yml"
     script:
-        "visualize-parameter-sweep.R"
+        "scripts/visualize-parameter-sweep.R"
 
 
 ### code below can be used to run individual dae/vae with specified parameter combos
@@ -164,7 +164,7 @@ rule run_dae:
     conda: 'environment.yml'
     shell:
        """
-       python dae.py    --input_data {input}
+       python scripts/dae.py    --input_data {input}
                         --learning_rate {wildcards.learning_rate}
                         --batch_size {wildcards.batch_size}
                         --epochs {wildcards.epochs}
@@ -181,7 +181,7 @@ rule summarize_paramsweep_dae:
         results_dir = directory("results/dae")
     shell:
         """
-        python biobombe_scripts/summarize_paramsweep.py -r {params.results_dir} -f {output}
+        python scripts/summarize_paramsweep.py -r {params.results_dir} -f {output}
         """
 
 rule run_vae:
@@ -192,7 +192,7 @@ rule run_vae:
     conda: 'environment.yml'
     shell:
        """
-       python vae.py    --input_data {input}
+       python scripts/vae.py    --input_data {input}
                         --learning_rate {wildcards.learning_rate}
                         --batch_size {wildcards.batch_size}
                         --epochs {wildcards.epochs}
@@ -209,7 +209,7 @@ rule summarize_paramsweep_vae:
         "results/vae/{sample}_paramsweep_summary.txt"
     shell:
         """
-        python biobombe_scripts/summarize_paramsweep.py -r {params.results_dir} -f {output}
+        python scripts/summarize_paramsweep.py -r {params.results_dir} -f {output}
         """
 
 rule visualize_tybalt_paramsweep:
@@ -222,5 +222,5 @@ rule visualize_tybalt_paramsweep:
         "figures/viz_results/{sample}_z_parameter_final_loss_dae.png",
         "figures/viz_results/{sample}_z_parameter_final_loss_vae.png"
     script:
-        "visualize-parameter-sweep.r"
+        "scripts/visualize-parameter-sweep.r"
 

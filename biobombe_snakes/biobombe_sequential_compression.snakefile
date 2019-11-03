@@ -7,7 +7,7 @@ Run: snakemake -s  biobombe_sequential_compression.snakefile --use-conda # use -
 import os
 import sys
 import pandas as pd
-from biobombe_snakemake_utils import read_params
+from scripts.biobombe_snakemake_utils import read_params
 
 
 paramsfile = "config/z_parameter_sweep_MMETSP.tsv"
@@ -43,7 +43,7 @@ rule preprocess_data:
     shell:
         """
         export KERAS_BACKEND=tensorflow
-        python process_expression_data.py {input} --mad --output_folder {params.outdir}
+        python scripts/process_expression_data.py {input} --mad --output_folder {params.outdir}
         """
 
 rule preprocess_data_scale:
@@ -60,7 +60,7 @@ rule preprocess_data_scale:
     shell:
         """
         export KERAS_BACKEND=tensorflow
-        python process_expression_data.py {input} --mad --output_folder {params.outdir} --scale --scale_method "min_max"
+        python scripts/process_expression_data.py {input} --mad --output_folder {params.outdir} --scale --scale_method "min_max"
         """
 
 rule train_models:
@@ -84,7 +84,7 @@ rule train_models:
     shell:
         """
         export KERAS_BACKEND=tensorflow
-        python train_models_single_zdim.py  {input.train} {input.test} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir}
+        python scripts/train_models_single_zdim.py  {input.train} {input.test} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir}
         """
 
 rule train_models_shuffle:
@@ -109,7 +109,7 @@ rule train_models_shuffle:
     shell:
         """
         export KERAS_BACKEND=tensorflow
-        python train_models_single_zdim.py   {input.train} {input.test} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir} --shuffle
+        python scripts/train_models_single_zdim.py   {input.train} {input.test} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir} --shuffle
         """
 
 rule train_models_mad:
@@ -134,7 +134,7 @@ rule train_models_mad:
     shell:
         """
         export KERAS_BACKEND=tensorflow
-        python train_models_single_zdim.py   {input.train} {input.test} --mad_train {input.mad_train} --mad_test {input.mad_test} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir}
+        python scripts/train_models_single_zdim.py   {input.train} {input.test} --mad_train {input.mad_train} --mad_test {input.mad_test} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir}
         """
 
 rule train_models_shuffle_mad:
@@ -159,7 +159,7 @@ rule train_models_shuffle_mad:
     shell:
         """
         export KERAS_BACKEND=tensorflow
-        python train_models_single_zdim.py   {input.train} {input.test} --mad_train {input.mad_train} --mad_test {input.mad_test} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir} --shuffle
+        python scripts/train_models_single_zdim.py   {input.train} {input.test} --mad_train {input.mad_train} --mad_test {input.mad_test} --basename {wildcards.sample} --paramsfile {params.paramsF} --zdim {wildcards.zdim} --outdir {params.out_dir} --shuffle
         """
 
 
@@ -177,7 +177,7 @@ rule reconstruct_results:
         "environment.yml"
     shell:
         """
-        "visualize_reconstruction.r"
+        "scripts/visualize_reconstruction.r"
         """
 
 rule reconstruct_results_mad:
@@ -194,5 +194,5 @@ rule reconstruct_results_mad:
         "environment.yml"
     shell:
         """
-        "visualize_reconstruction.r"
+        "scripts/visualize_reconstruction.r"
         """
