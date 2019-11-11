@@ -1,8 +1,7 @@
-# Modified from https://github.com/greenelab/BioBombe/blob/master/3.build-hetnets/generate_msigdb_matrix.ipynb
-#
 # # Processing MSigDB Gene Sets into Binary Matrix
+# # Modified from https://github.com/greenelab/BioBombe/blob/master/3.build-hetnets/generate_msigdb_matrix.ipynb
 #
-# This notebook loads the full MSigDB gene set `.gmt` file (version 6.1) and outputs a binary, gene by gene set matrix indicating gene membership in the given gene set.
+# This script loads the full MSigDB gene set `.gmt` file (version 6.1) and outputs a binary, gene by gene set matrix indicating gene membership in the given gene set.
 #
 # **Note that we exclude gene sets with restrictive licences (KEGG, Biocarta, and The AAAS/STKE Cell Signaling Database)**
 
@@ -24,7 +23,7 @@ def make_template_matrix(msigdb_file, checkblacklist=True): #blacklist = ['KEGG'
     all_db_pathways = []
     all_db_genes = []
     # Resources with restrictive licenses
-    #blacklist = ('KEGG', 'BIOCARTA', 'ST_')
+    blacklist = ('KEGG', 'BIOCARTA', 'ST_')
 
     # Get a set of all genes and all pathways in MSigDB (not blacklisted)
     with open(msigdb_file, 'r') as msigdb_fh:
@@ -64,9 +63,6 @@ def make_template_matrix(msigdb_file, checkblacklist=True): #blacklist = ['KEGG'
 
 # Store .gmt files
 #full_msigdb_file = os.path.join('data', 'msigdb.v6.1.entrez.gmt')
-
-# Resources with restrictive licenses
-#blacklist = ('KEGG', 'BIOCARTA', 'ST_')
 
 # ## Process MSigDB gmt files into large matrix
 
