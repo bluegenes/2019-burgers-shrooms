@@ -1,0 +1,10 @@
+MMETSP1152	Emiliania_huxleyi_1152
+MMETSP0994	Emiliania_huxleyi_0994
+MMETSP0006	Prymnesium_parvum_0006
+MMETSP1083	Prymnesium_parvum_1083
+MMETSP0595	Isochrysis_galbana_0595
+MMETSP0943	Isochrysis_galbana_0943
+MMETSP0286	Prymnesium_polylepis_0286
+MMETSP0143	Prymnesium_polylepis_0143
+MMETSP0090	Chaetoceros_affinis_0090
+MMETSP0091	Chaetoceros_affinis_0091
